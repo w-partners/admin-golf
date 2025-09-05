@@ -1,117 +1,268 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, AccountType, Region, OperStatus, UserStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting seed...');
+  console.log('🌱 Seeding database...');
 
-  // 기본 계정 생성
-  const defaultUsers = [
-    { name: '최고관리자', phone: '01034424668', password: 'admin1234', accountType: 'SUPER_ADMIN' },
-    { name: '관리자', phone: '01000000000', password: 'admin', accountType: 'ADMIN' },
-    { name: '팀장', phone: '01000000001', password: 'admin', accountType: 'TEAM_LEADER' },
-    { name: '내부매니저', phone: '01011111111', password: 'admin', accountType: 'INTERNAL_MANAGER' },
-    { name: '외부매니저', phone: '01022222222', password: 'admin', accountType: 'EXTERNAL_MANAGER' },
-    { name: '거래처', phone: '01033333333', password: 'admin', accountType: 'PARTNER' },
-    { name: '골프장', phone: '01044444444', password: 'admin', accountType: 'GOLF_COURSE' },
-    { name: '회원', phone: '01055555555', password: 'admin', accountType: 'MEMBER' }
+  // 1. 사용자 계정 생성
+  const users = [
+    {
+      name: '최고관리자',
+      phone: '01034424668',
+      password: 'admin1234',
+      accountType: AccountType.SUPER_ADMIN,
+      status: UserStatus.ACTIVE
+    },
+    {
+      name: '관리자',
+      phone: '01000000000',
+      password: 'admin',
+      accountType: AccountType.ADMIN,
+      status: UserStatus.ACTIVE
+    },
+    {
+      name: '팀장',
+      phone: '01000000001',
+      password: 'admin',
+      accountType: AccountType.TEAM_LEADER,
+      status: UserStatus.ACTIVE
+    },
+    {
+      name: '내부매니저',
+      phone: '01011111111',
+      password: 'admin',
+      accountType: AccountType.INTERNAL_MANAGER,
+      status: UserStatus.ACTIVE
+    },
+    {
+      name: '외부매니저',
+      phone: '01022222222',
+      password: 'admin',
+      accountType: AccountType.EXTERNAL_MANAGER,
+      status: UserStatus.ACTIVE
+    },
+    {
+      name: '거래처',
+      phone: '01033333333',
+      password: 'admin',
+      accountType: AccountType.PARTNER,
+      company: '파트너사',
+      status: UserStatus.ACTIVE
+    },
+    {
+      name: '골프장담당',
+      phone: '01044444444',
+      password: 'admin',
+      accountType: AccountType.GOLF_COURSE,
+      company: '취곡CC',
+      status: UserStatus.ACTIVE
+    },
+    {
+      name: '일반회원',
+      phone: '01055555555',
+      password: 'admin',
+      accountType: AccountType.MEMBER,
+      status: UserStatus.ACTIVE
+    }
   ];
 
-  for (const user of defaultUsers) {
-    const existingUser = await prisma.user.findUnique({
-      where: { phone: user.phone }
+  console.log('📝 Creating users...');
+  const createdUsers = [];
+  
+  // 모든 비밀번호를 한 번에 해싱
+  const hashedPasswords = await Promise.all(
+    users.map(u => bcrypt.hash(u.password, 10))
+  );
+  
+  for (let i = 0; i < users.length; i++) {
+    const userData = users[i];
+    const user = await prisma.user.upsert({
+      where: { phone: userData.phone },
+      update: {},
+      create: {
+        ...userData,
+        password: hashedPasswords[i]
+      }
     });
-
-    if (!existingUser) {
-      await prisma.user.create({
-        data: {
-          ...user,
-          password: await bcrypt.hash(user.password, 10)
-        }
-      });
-      console.log(`✅ Created user: ${user.name} (${user.phone})`);
-    } else {
-      console.log(`⚠️  User already exists: ${user.name} (${user.phone})`);
-    }
+    createdUsers.push(user);
+    console.log(`   ✅ Created user: ${user.name} (${user.phone})`);
   }
 
-  // 시스템 설정 초기값
-  const systemConfigs = [
-    { category: 'tee_time', key: 'confirmation_timeout', value: 10 },
-    { category: 'tee_time', key: 'cancellation_deadline', value: 2 },
-    { category: 'tee_time', key: 'connection_timeout', value: 10 },
-    { category: 'system', key: 'max_future_days', value: 90 },
-    { category: 'system', key: 'default_green_fee', value: 15.0 }
+  // 2. 팀 생성 (팀장과 팀원 관계)
+  const teamLeader = createdUsers.find(u => u.accountType === AccountType.TEAM_LEADER);
+  const internalManager = createdUsers.find(u => u.accountType === AccountType.INTERNAL_MANAGER);
+  const externalManager = createdUsers.find(u => u.accountType === AccountType.EXTERNAL_MANAGER);
+
+  if (teamLeader) {
+    console.log('👥 Creating team...');
+    const team = await prisma.team.upsert({
+      where: { leaderId: teamLeader.id },
+      update: {},
+      create: {
+        name: 'A팀',
+        leaderId: teamLeader.id
+      }
+    });
+
+    // 팀원 할당
+    if (internalManager) {
+      await prisma.user.update({
+        where: { id: internalManager.id },
+        data: { teamId: team.id }
+      });
+    }
+    if (externalManager) {
+      await prisma.user.update({
+        where: { id: externalManager.id },
+        data: { teamId: team.id }
+      });
+    }
+    console.log(`   ✅ Created team: ${team.name}`);
+  }
+
+  // 3. 골프장 생성
+  const golfCourses = [
+    // 제주
+    { sequence: 1, name: '취곡CC', region: Region.JEJU, address: '제주특별자치도 서귀포시', contact: '064-738-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 2, name: '포도CC', region: Region.JEJU, address: '제주특별자치도 서귀포시', contact: '064-792-1234', operStatus: OperStatus.MANUAL },
+    { sequence: 3, name: '라온CC', region: Region.JEJU, address: '제주특별자치도 제주시', contact: '064-799-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 4, name: '해비치CC', region: Region.JEJU, address: '제주특별자치도 서귀포시', contact: '064-790-1234', operStatus: OperStatus.API_CONNECTED },
+    
+    // 경기남부
+    { sequence: 5, name: '신원CC', region: Region.GYEONGGI_SOUTH, address: '경기도 용인시', contact: '031-334-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 6, name: '렉스필드CC', region: Region.GYEONGGI_SOUTH, address: '경기도 용인시', contact: '031-332-1234', operStatus: OperStatus.MANUAL },
+    { sequence: 7, name: '골든베이CC', region: Region.GYEONGGI_SOUTH, address: '경기도 화성시', contact: '031-369-1234', operStatus: OperStatus.API_CONNECTED },
+    
+    // 경기북부
+    { sequence: 8, name: '아시아나CC', region: Region.GYEONGGI_NORTH, address: '경기도 파주시', contact: '031-949-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 9, name: '서원밸리CC', region: Region.GYEONGGI_NORTH, address: '경기도 파주시', contact: '031-958-1234', operStatus: OperStatus.MANUAL },
+    
+    // 경기동부
+    { sequence: 10, name: '리베라CC', region: Region.GYEONGGI_EAST, address: '경기도 여주시', contact: '031-881-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 11, name: '솔모로CC', region: Region.GYEONGGI_EAST, address: '경기도 여주시', contact: '031-884-1234', operStatus: OperStatus.MANUAL },
+    
+    // 강원
+    { sequence: 12, name: '비발디파크CC', region: Region.GANGWON, address: '강원도 홍천군', contact: '033-439-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 13, name: '파인리즈CC', region: Region.GANGWON, address: '강원도 원주시', contact: '033-731-1234', operStatus: OperStatus.MANUAL },
+    
+    // 충남
+    { sequence: 14, name: '실크리버CC', region: Region.CHUNGNAM, address: '충청남도 천안시', contact: '041-560-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 15, name: '골드레이크CC', region: Region.CHUNGNAM, address: '충청남도 아산시', contact: '041-543-1234', operStatus: OperStatus.MANUAL },
+    
+    // 경상
+    { sequence: 16, name: '통도파인이스트CC', region: Region.GYEONGSANG, address: '경상남도 양산시', contact: '055-370-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 17, name: '에덴밸리CC', region: Region.GYEONGSANG, address: '경상북도 경주시', contact: '054-745-1234', operStatus: OperStatus.MANUAL },
+    
+    // 전라
+    { sequence: 18, name: '남원CC', region: Region.JEOLLA, address: '전라북도 남원시', contact: '063-630-1234', operStatus: OperStatus.API_CONNECTED },
+    { sequence: 19, name: '무주덕유산CC', region: Region.JEOLLA, address: '전라북도 무주군', contact: '063-322-1234', operStatus: OperStatus.MANUAL }
   ];
 
-  for (const config of systemConfigs) {
-    const existing = await prisma.systemConfig.findUnique({
+  console.log('⛳ Creating golf courses...');
+  for (const gcData of golfCourses) {
+    const gc = await prisma.golfCourse.upsert({
+      where: { 
+        id: gcData.sequence  // sequence를 id로 사용
+      },
+      update: gcData,
+      create: gcData
+    });
+    console.log(`   ✅ Created golf course: ${gc.name} (${getRegionName(gc.region)})`);
+  }
+
+  // 4. 시스템 설정
+  console.log('⚙️ Creating system configurations...');
+  
+  const configs = [
+    {
+      category: 'timer',
+      key: 'reservation_timeout',
+      value: { minutes: 10, enabled: true }
+    },
+    {
+      category: 'display',
+      key: 'matrix_days',
+      value: { days: 90 }
+    },
+    {
+      category: 'business',
+      key: 'time_slots',
+      value: {
+        slot1: { name: '1부', startHour: 0, endHour: 10 },
+        slot2: { name: '2부', startHour: 10, endHour: 15 },
+        slot3: { name: '3부', startHour: 15, endHour: 24 }
+      }
+    }
+  ];
+
+  for (const config of configs) {
+    await prisma.systemConfig.upsert({
       where: {
         category_key: {
           category: config.category,
           key: config.key
         }
-      }
+      },
+      update: { value: config.value },
+      create: config
     });
-
-    if (!existing) {
-      await prisma.systemConfig.create({
-        data: config
-      });
-      console.log(`✅ Created config: ${config.category}.${config.key} = ${config.value}`);
-    } else {
-      console.log(`⚠️  Config already exists: ${config.category}.${config.key}`);
-    }
+    console.log(`   ✅ Created config: ${config.category}.${config.key}`);
   }
 
-  // 샘플 골프장 생성
-  const sampleGolfCourses = [
-    { sequence: 1, name: '제주 취곡CC', region: 'JEJU', address: '제주특별자치도 제주시', contact: '064-123-4567', operStatus: 'MANUAL' },
-    { sequence: 2, name: '제주 포도CC', region: 'JEJU', address: '제주특별자치도 서귀포시', contact: '064-234-5678', operStatus: 'MANUAL' },
-    { sequence: 3, name: '경기 마실CC', region: 'GYEONGGI_NORTH', address: '경기도 파주시', contact: '031-345-6789', operStatus: 'API_CONNECTED' },
-    { sequence: 4, name: '강원 표선CC', region: 'GANGWON', address: '강원도 춘천시', contact: '033-456-7890', operStatus: 'MANUAL' }
-  ];
-
-  for (const course of sampleGolfCourses) {
-    const existing = await prisma.golfCourse.findFirst({
-      where: { name: course.name }
-    });
-
-    if (!existing) {
-      await prisma.golfCourse.create({
-        data: course
-      });
-      console.log(`✅ Created golf course: ${course.name}`);
-    } else {
-      console.log(`⚠️  Golf course already exists: ${course.name}`);
+  // 5. 샘플 공지사항
+  console.log('📢 Creating notices...');
+  await prisma.notice.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      title: '골프장 예약 관리 시스템 오픈',
+      content: '골프장 예약 관리 시스템이 정식 오픈되었습니다. 많은 이용 부탁드립니다.',
+      isActive: true,
+      targetAccountTypes: [
+        AccountType.SUPER_ADMIN,
+        AccountType.ADMIN,
+        AccountType.TEAM_LEADER,
+        AccountType.INTERNAL_MANAGER,
+        AccountType.EXTERNAL_MANAGER,
+        AccountType.PARTNER,
+        AccountType.GOLF_COURSE,
+        AccountType.MEMBER
+      ]
     }
-  }
-
-  // 기본 공지사항 생성
-  const defaultNotice = {
-    title: '골프장 예약 관리 시스템 오픈',
-    content: '골프장 예약 관리 시스템이 정식 오픈되었습니다. 문의사항이 있으시면 관리자에게 연락해주세요.',
-    targetAccountTypes: ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER', 'GOLF_COURSE', 'MEMBER']
-  };
-
-  const existingNotice = await prisma.notice.findFirst({
-    where: { title: defaultNotice.title }
   });
+  console.log('   ✅ Created sample notice');
 
-  if (!existingNotice) {
-    await prisma.notice.create({
-      data: defaultNotice
-    });
-    console.log(`✅ Created notice: ${defaultNotice.title}`);
-  }
+  console.log('\n✨ Seeding completed successfully!');
+  console.log('\n📌 Test accounts:');
+  console.log('   최고관리자: 010-3442-4668 / admin1234');
+  console.log('   관리자: 010-0000-0000 / admin');
+  console.log('   팀장: 010-0000-0001 / admin');
+  console.log('   내부매니저: 010-1111-1111 / admin');
+  console.log('   외부매니저: 010-2222-2222 / admin');
+  console.log('   거래처: 010-3333-3333 / admin');
+  console.log('   골프장: 010-4444-4444 / admin');
+  console.log('   회원: 010-5555-5555 / admin');
+}
 
-  console.log('🎉 Seed completed successfully!');
+function getRegionName(region: string): string {
+  const regionNames: Record<string, string> = {
+    GYEONGGI_NORTH: '경기북부',
+    GYEONGGI_SOUTH: '경기남부',
+    GYEONGGI_EAST: '경기동부',
+    GANGWON: '강원',
+    GYEONGSANG: '경상',
+    CHUNGNAM: '충남',
+    JEOLLA: '전라',
+    JEJU: '제주'
+  };
+  return regionNames[region] || region;
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:', e);
+    console.error('❌ Seeding failed:', e);
     process.exit(1);
   })
   .finally(async () => {
