@@ -246,7 +246,7 @@ async function main() {
       title: '골프장 예약 관리 시스템 오픈',
       content: '골프장 예약 관리 시스템이 정식 오픈되었습니다. 많은 이용 부탁드립니다.',
       isActive: true,
-      targetAccountTypes: [
+      targetAccountTypes: JSON.stringify([
         AccountType.SUPER_ADMIN,
         AccountType.ADMIN,
         AccountType.TEAM_LEADER,
@@ -255,7 +255,7 @@ async function main() {
         AccountType.PARTNER,
         AccountType.GOLF_COURSE,
         AccountType.MEMBER
-      ]
+      ])
     }
   });
   console.log('   ✅ Created sample notice');

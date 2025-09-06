@@ -40,4 +40,17 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# database
+prisma/dev.db*
+*.db
+*.db-*
+prisma/migrations/
+
+# testing artifacts
+artifacts/
+*.png
+*.webm
+test-*-validation.ts
+validation-report-*.json
+
 /app/generated/prisma

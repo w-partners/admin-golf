@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.TARGET_URL || 'http://localhost:3002';
+const BASE_URL = process.env.TARGET_URL || 'http://localhost:3000';
 
 test.describe('Golf Reservation System - Smoke Test', () => {
   test('Application is accessible and login page works', async ({ page }) => {
