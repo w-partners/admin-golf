@@ -1,12 +1,26 @@
 import { PrismaClient, AccountType, Region, OperStatus, UserStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+// 디버깅을 위한 로그 활성화 및 타임아웃 설정
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+  datasourceUrl: process.env.DATABASE_URL,
+});
 
 async function main() {
   console.log('🌱 Seeding database...');
+  console.log('📍 Database URL:', process.env.DATABASE_URL?.substring(0, 50) + '...');
+  
+  // 데이터베이스 연결 테스트
+  try {
+    await prisma.$connect();
+    console.log('✅ Database connected successfully');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    throw error;
+  }
 
-  // 1. 사용자 계정 생성
+  // 1. 사용자 계정 생성 - 최소한의 데이터로 시작
   const users = [
     {
       name: '최고관리자',
@@ -71,23 +85,35 @@ async function main() {
   console.log('📝 Creating users...');
   const createdUsers = [];
   
-  // 모든 비밀번호를 한 번에 해싱
-  const hashedPasswords = await Promise.all(
-    users.map(u => bcrypt.hash(u.password, 10))
-  );
-  
-  for (let i = 0; i < users.length; i++) {
-    const userData = users[i];
-    const user = await prisma.user.upsert({
-      where: { phone: userData.phone },
-      update: {},
-      create: {
-        ...userData,
-        password: hashedPasswords[i]
-      }
-    });
-    createdUsers.push(user);
-    console.log(`   ✅ Created user: ${user.name} (${user.phone})`);
+  // 비밀번호 해싱을 개별적으로 처리
+  for (const userData of users) {
+    try {
+      console.log(`   ⏳ Processing user: ${userData.name}`);
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      
+      const user = await prisma.user.upsert({
+        where: { phone: userData.phone },
+        update: {
+          name: userData.name,
+          password: hashedPassword,
+          accountType: userData.accountType,
+          status: userData.status,
+          company: userData.company || null
+        },
+        create: {
+          name: userData.name,
+          phone: userData.phone,
+          password: hashedPassword,
+          accountType: userData.accountType,
+          status: userData.status,
+          company: userData.company || null
+        }
+      });
+      createdUsers.push(user);
+      console.log(`   ✅ Created/Updated user: ${user.name} (${user.phone})`);
+    } catch (error) {
+      console.error(`   ❌ Failed to create user ${userData.name}:`, error);
+    }
   }
 
   // 2. 팀 생성 (팀장과 팀원 관계)
@@ -260,11 +286,32 @@ function getRegionName(region: string): string {
   return regionNames[region] || region;
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Seeding failed:', e);
+// 타임아웃 처리를 위한 래퍼 함수
+async function runWithTimeout() {
+  const timeoutId = setTimeout(() => {
+    console.error('❌ Seeding timeout after 30 seconds');
     process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  }, 30000); // 30초 타임아웃
+
+  try {
+    await main();
+    clearTimeout(timeoutId);
+  } catch (e) {
+    clearTimeout(timeoutId);
+    console.error('❌ Seeding failed:', e);
+    if (e instanceof Error) {
+      console.error('Error details:', e.message);
+      console.error('Stack trace:', e.stack);
+    }
+    process.exit(1);
+  } finally {
+    try {
+      await prisma.$disconnect();
+      console.log('🔌 Database disconnected');
+    } catch (disconnectError) {
+      console.error('❌ Failed to disconnect:', disconnectError);
+    }
+  }
+}
+
+runWithTimeout();

@@ -1,11 +1,11 @@
-import { NextAuthOptions } from 'next-auth'
+import NextAuth from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { AccountType } from '@prisma/client'
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -52,12 +52,18 @@ export const authOptions: NextAuthOptions = {
             throw new Error('비밀번호가 일치하지 않습니다')
           }
 
+          // 로그인 시간 업데이트
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() }
+          })
+
           return {
-            id: user.id,
+            id: user.id.toString(),
             phone: user.phone,
             name: user.name,
             accountType: user.accountType,
-            status: user.status,
+            isActive: user.isActive,
             teamId: user.teamId,
             team: user.team
           }
@@ -72,25 +78,22 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60 // 24시간
   },
-  jwt: {
-    maxAge: 24 * 60 * 60 // 24시간
-  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.accountType = user.accountType
-        token.status = user.status
+        token.isActive = user.isActive
         token.teamId = user.teamId
         token.team = user.team
       }
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.id = token.sub!
         session.user.accountType = token.accountType as AccountType
-        session.user.status = token.status
-        session.user.teamId = token.teamId
+        session.user.isActive = token.isActive as boolean
+        session.user.teamId = token.teamId as number
         session.user.team = token.team
       }
       return session
@@ -100,7 +103,7 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/login'
   }
-}
+})
 
 // 권한 체크 유틸리티 함수
 export const checkPermission = (

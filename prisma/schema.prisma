@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,226 +7,199 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 사용자 관리
 model User {
-  id          Int         @id @default(autoincrement())
-  name        String
-  phone       String      @unique
-  password    String
-  accountType AccountType
-  company     String?     // 소속회사 (거래처, 골프장용)
-  region      Region?     // 담당지역 (매니저용)
-  status      UserStatus  @default(ACTIVE)
-  teamId      Int?        // 팀 소속 (팀장-팀원 관계)
-  team        Team?       @relation(fields: [teamId], references: [id])
-  managedTeam Team?       @relation("TeamLeader")
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  lastLoginAt DateTime?
-  notes       String?     // 관리자 메모
-  
-  // 관계
-  teeTimes    TeeTime[]   @relation("ManagerTeeTime")
-  confirmedTeeTimes TeeTime[] @relation("ConfirmedBy")
-  
+  id                Int         @id @default(autoincrement())
+  name              String
+  phone             String      @unique
+  password          String
+  accountType       AccountType
+  company           String?
+  region            Region?
+  status            UserStatus  @default(ACTIVE)
+  teamId            Int?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  lastLoginAt       DateTime?
+  notes             String?
+  managedTeam       Team?       @relation("TeamLeader")
+  confirmedTeeTimes TeeTime[]   @relation("ConfirmedBy")
+  teeTimes          TeeTime[]   @relation("ManagerTeeTime")
+  team              Team?       @relation(fields: [teamId], references: [id])
+
   @@map("users")
 }
 
-// 팀 관리 (팀장-팀원 구조)
 model Team {
   id       Int    @id @default(autoincrement())
   name     String
   leaderId Int    @unique
   leader   User   @relation("TeamLeader", fields: [leaderId], references: [id])
   members  User[]
-  
+
   @@map("teams")
 }
 
-// 골프장 관리
 model GolfCourse {
-  id           Int            @id @default(autoincrement())
-  sequence     Int            // 순번
-  name         String
-  region       Region
-  address      String
-  contact      String
-  operStatus   OperStatus     // 운영상태
-  notes        String?        // 기타
-  defaultPlayers Int @default(4) // 기본 인원수
-  
-  // 관계
-  teeTimes     TeeTime[]
-  
+  id             Int        @id @default(autoincrement())
+  sequence       Int
+  name           String
+  region         Region
+  address        String
+  contact        String
+  operStatus     OperStatus
+  notes          String?
+  defaultPlayers Int        @default(4)
+  teeTimes       TeeTime[]
+
   @@map("golf_courses")
 }
 
-// 티타임 관리 (핵심 테이블)
 model TeeTime {
-  id              Int              @id @default(autoincrement())
-  sequence        Int              // 순번
-  
-  // 골프장 정보
-  golfCourse      GolfCourse       @relation(fields: [golfCourseId], references: [id])
-  golfCourseId    Int
-  region          Region           // 자동입력 (골프장 기반)
-  
-  // 일시 정보
-  date            DateTime         // 날짜
-  time            DateTime         // 시간
-  timeSlot        TimeSlot         // 1부/2부/3부 (자동분류)
-  
-  // 예약 정보
-  greenFee        Decimal          // 그린피 (만원, 소수점1자리)
-  players         Int              // 예약인원
-  bookingType     BookingType      // 부킹/조인 (4명미만시 자동 조인)
-  request         RequestType      // 요청사항
-  holes           HoleType         // 홀선택
-  caddy           CaddyType        // 캐디
-  prepayment      Boolean          // 선입금
-  meal            Boolean          // 식사포함
-  cartFee         Boolean          // 카트비포함
-  
-  // 상태 관리
-  status          TeeTimeStatus    @default(AVAILABLE)
-  reservedAt      DateTime?        // 예약시간 (10분 타이머용)
-  confirmedAt     DateTime?        // 예약확정시간
-  
-  // 연결 및 추가정보
-  connectedId     Int?             // 연결티타임 ID
-  connected       TeeTime?         @relation("ConnectedTeeTime", fields: [connectedId], references: [id])
-  connections     TeeTime[]        @relation("ConnectedTeeTime")
-  lodging         String?          // 숙박정보 (연결티타임용)
-  type            TeeTimeType      // 데일리/패키지
-  
-  // 담당자 정보
-  booker          String?          // 예약자명
-  manager         User?            @relation("ManagerTeeTime", fields: [managerId], references: [id])
-  managerId       Int?             // 담당매니저
-  confirmedBy     User?            @relation("ConfirmedBy", fields: [confirmedById], references: [id])
-  confirmedById   Int?             // 확정 처리자
-  
-  // 실적 및 정산
-  performanceReg  Boolean          @default(false) // 실적등록 여부
-  commission      Decimal?         // 수수료
-  settlement      SettlementType   // 정산방식
-  
-  // 시스템 정보
-  apiIntegration  Boolean          @default(false) // API연동 여부
-  notes           String?          // 비고
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
+  id             Int            @id @default(autoincrement())
+  sequence       Int
+  golfCourseId   Int
+  region         Region
+  date           DateTime
+  time           DateTime
+  timeSlot       TimeSlot
+  greenFee       Decimal
+  players        Int
+  bookingType    BookingType
+  request        RequestType
+  holes          HoleType
+  caddy          CaddyType
+  prepayment     Boolean
+  meal           Boolean
+  cartFee        Boolean
+  status         TeeTimeStatus  @default(AVAILABLE)
+  reservedAt     DateTime?
+  confirmedAt    DateTime?
+  connectedId    Int?
+  lodging        String?
+  type           TeeTimeType
+  booker         String?
+  managerId      Int?
+  confirmedById  Int?
+  performanceReg Boolean        @default(false)
+  commission     Decimal?
+  settlement     SettlementType
+  apiIntegration Boolean        @default(false)
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  confirmedBy    User?          @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+  connected      TeeTime?       @relation("ConnectedTeeTime", fields: [connectedId], references: [id])
+  connections    TeeTime[]      @relation("ConnectedTeeTime")
+  golfCourse     GolfCourse     @relation(fields: [golfCourseId], references: [id])
+  manager        User?          @relation("ManagerTeeTime", fields: [managerId], references: [id])
+
   @@map("tee_times")
 }
 
-// 시스템 설정 (동적 관리)
 model SystemConfig {
-  id          Int      @id @default(autoincrement())
-  category    String   // regions, account_types, permissions 등
-  key         String   // 설정 키
-  value       Json     // 설정 값 (JSON)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id        Int      @id @default(autoincrement())
+  category  String
+  key       String
+  value     Json
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([category, key])
   @@map("system_config")
 }
 
-// 공지사항
 model Notice {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  isActive  Boolean  @default(true)
-  targetAccountTypes AccountType[] // 대상 계정 유형들
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id                 Int           @id @default(autoincrement())
+  title              String
+  content            String
+  isActive           Boolean       @default(true)
+  targetAccountTypes AccountType[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
   @@map("notices")
 }
 
-// Enum 정의
 enum AccountType {
-  SUPER_ADMIN      // 최고관리자
-  ADMIN            // 관리자  
-  TEAM_LEADER      // 팀장
-  INTERNAL_MANAGER // 내부매니저
-  EXTERNAL_MANAGER // 외부매니저
-  PARTNER          // 거래처
-  GOLF_COURSE      // 골프장
-  MEMBER           // 회원
+  SUPER_ADMIN
+  ADMIN
+  TEAM_LEADER
+  INTERNAL_MANAGER
+  EXTERNAL_MANAGER
+  PARTNER
+  GOLF_COURSE
+  MEMBER
 }
 
 enum Region {
-  GYEONGGI_NORTH   // 경기북부
-  GYEONGGI_SOUTH   // 경기남부
-  GYEONGGI_EAST    // 경기동부
-  GANGWON          // 강원
-  GYEONGSANG       // 경상
-  CHUNGNAM         // 충남
-  JEOLLA           // 전라
-  JEJU             // 제주
+  GYEONGGI_NORTH
+  GYEONGGI_SOUTH
+  GYEONGGI_EAST
+  GANGWON
+  GYEONGSANG
+  CHUNGNAM
+  JEOLLA
+  JEJU
 }
 
 enum UserStatus {
-  ACTIVE           // 활성
-  INACTIVE         // 비활성
-  SUSPENDED        // 정지
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
 
 enum OperStatus {
-  API_CONNECTED    // API연동
-  MANUAL           // 수동
-  STANDBY          // 대기
+  API_CONNECTED
+  MANUAL
+  STANDBY
 }
 
 enum TimeSlot {
-  SLOT_1           // 1부 (10시 이전)
-  SLOT_2           // 2부 (10시-15시)
-  SLOT_3           // 3부 (15시 이후)
+  SLOT_1
+  SLOT_2
+  SLOT_3
 }
 
 enum BookingType {
-  BOOKING          // 부킹 (4명)
-  JOIN             // 조인 (4명 미만)
+  BOOKING
+  JOIN
 }
 
 enum RequestType {
-  ANY              // 무관
-  COUPLE           // 커플
-  MALE             // 남성
-  FEMALE           // 여성
+  ANY
+  COUPLE
+  MALE
+  FEMALE
 }
 
 enum HoleType {
-  HOLE_18          // 18홀
-  HOLE_36          // 36홀
-  HOLE_9           // 9홀
+  HOLE_18
+  HOLE_36
+  HOLE_9
 }
 
 enum CaddyType {
-  CADDY            // 캐디
-  NO_CADDY         // 노캐디
-  DRIVING_CADDY    // 운전캐디
-  TRAINEE_CADDY    // 교육생캐디
+  CADDY
+  NO_CADDY
+  DRIVING_CADDY
+  TRAINEE_CADDY
 }
 
 enum TeeTimeStatus {
-  AVAILABLE        // 예약가능
-  RESERVED         // 예약됨 (10분 대기)
-  CONFIRMED        // 예약확정
-  COMPLETED        // 완료
-  CANCELLED        // 취소됨
+  AVAILABLE
+  RESERVED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
 }
 
 enum TeeTimeType {
-  DAILY            // 데일리
-  PACKAGE          // 패키지
+  DAILY
+  PACKAGE
 }
 
 enum SettlementType {
-  PREPAYMENT       // 사전입금
-  POST_SETTLEMENT  // 사후정산
+  PREPAYMENT
+  POST_SETTLEMENT
 }

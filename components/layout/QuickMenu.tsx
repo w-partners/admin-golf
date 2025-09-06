@@ -1,102 +1,192 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { AccountType } from '@prisma/client'
-import { 
-  Calendar, 
-  Plus, 
-  MapPin, 
-  BarChart3, 
-  Users, 
-  ClipboardList 
+import { cn } from '@/lib/utils'
+import {
+  Calendar,
+  Plus,
+  MapPin,
+  BarChart3,
+  Users,
+  Settings,
+  Home,
+  FileText,
+  Trophy
 } from 'lucide-react'
 
-// 권한 체크 함수
-const checkPermission = (userAccountType: AccountType, requiredLevel: AccountType): boolean => {
-  const hierarchy: AccountType[] = [
-    'MEMBER',
-    'GOLF_COURSE', 
-    'PARTNER',
-    'EXTERNAL_MANAGER',
-    'INTERNAL_MANAGER',
-    'TEAM_LEADER',
-    'ADMIN',
-    'SUPER_ADMIN'
-  ]
-  
-  const userIndex = hierarchy.indexOf(userAccountType)
-  const requiredIndex = hierarchy.indexOf(requiredLevel)
-  
-  return userIndex >= requiredIndex
+interface QuickMenuProps {
+  isMobile?: boolean
+  onNavigate?: () => void
 }
 
-export function QuickMenu() {
+interface MenuItemProps {
+  href: string
+  icon: React.ReactNode
+  label: string
+  isActive?: boolean
+  onClick?: () => void
+  disabled?: boolean
+}
+
+function MenuItem({ href, icon, label, isActive, onClick, disabled }: MenuItemProps) {
+  const content = (
+    <>
+      {icon}
+      <span>{label}</span>
+    </>
+  )
+
+  if (disabled) {
+    return (
+      <div className="flex items-center space-x-2 px-3 py-2 text-gray-400 cursor-not-allowed">
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <Link href={href} onClick={onClick}>
+      <div
+        className={cn(
+          "flex items-center space-x-2 px-3 py-2 rounded-md transition-colors",
+          isActive
+            ? "bg-blue-50 text-blue-700 font-medium"
+            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+        )}
+      >
+        {content}
+      </div>
+    </Link>
+  )
+}
+
+export function QuickMenu({ isMobile = false, onNavigate }: QuickMenuProps) {
   const { data: session } = useSession()
+  const pathname = usePathname()
+  const router = useRouter()
 
   if (!session) return null
 
   const userAccountType = session.user.accountType
 
+  // 권한별 메뉴 접근 가능 여부
+  const canAccessTeeTime = true // 모든 사용자
+  const canCreateTeeTime = ['INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER', 'TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
+  const canAccessGolfCourse = ['ADMIN', 'SUPER_ADMIN', 'GOLF_COURSE'].includes(userAccountType)
+  const canCreateGolfCourse = ['ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
+  const canAccessPerformance = ['INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER', 'TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
+  const canAccessMembers = ['ADMIN', 'SUPER_ADMIN', 'TEAM_LEADER'].includes(userAccountType)
+  const canAccessNotices = true // 모든 사용자
+  const canAccessTeam = ['TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
+
+  const handleNavigation = (href: string) => {
+    if (onNavigate) {
+      onNavigate()
+    }
+    router.push(href)
+  }
+
+  const menuItems = [
+    {
+      href: '/',
+      icon: <Home className="h-4 w-4" />,
+      label: '대시보드',
+      show: true,
+      active: pathname === '/'
+    },
+    {
+      href: '/tee-times',
+      icon: <Calendar className="h-4 w-4" />,
+      label: '티타임 조회',
+      show: canAccessTeeTime,
+      active: pathname.startsWith('/tee-times') && !pathname.includes('/new')
+    },
+    {
+      href: '/tee-times/new',
+      icon: <Plus className="h-4 w-4" />,
+      label: '티타임 등록',
+      show: canCreateTeeTime,
+      active: pathname === '/tee-times/new'
+    },
+    {
+      href: '/golf-courses',
+      icon: <MapPin className="h-4 w-4" />,
+      label: '골프장 관리',
+      show: canAccessGolfCourse,
+      active: pathname.startsWith('/golf-courses')
+    },
+    {
+      href: '/performance',
+      icon: <BarChart3 className="h-4 w-4" />,
+      label: '실적 관리',
+      show: canAccessPerformance,
+      active: pathname.startsWith('/performance')
+    },
+    {
+      href: '/members',
+      icon: <Users className="h-4 w-4" />,
+      label: '회원 관리',
+      show: canAccessMembers,
+      active: pathname.startsWith('/members')
+    },
+    {
+      href: '/team',
+      icon: <Trophy className="h-4 w-4" />,
+      label: '팀 관리',
+      show: canAccessTeam,
+      active: pathname.startsWith('/team')
+    },
+    {
+      href: '/notices',
+      icon: <FileText className="h-4 w-4" />,
+      label: '공지사항',
+      show: canAccessNotices,
+      active: pathname.startsWith('/notices')
+    }
+  ]
+
+  const visibleMenuItems = menuItems.filter(item => item.show)
+
+  if (isMobile) {
+    // 모바일 버티컬 레이아웃
+    return (
+      <nav className="px-4">
+        <div className="space-y-1">
+          {visibleMenuItems.map((item) => (
+            <MenuItem
+              key={item.href}
+              href={item.href}
+              icon={item.icon}
+              label={item.label}
+              isActive={item.active}
+              onClick={() => handleNavigation(item.href)}
+            />
+          ))}
+        </div>
+      </nav>
+    )
+  }
+
+  // 데스크톱 호리젠탈 레이아웃
   return (
-    <nav className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center space-x-4 max-w-7xl mx-auto">
-        {/* 티타임: 모두 */}
-        <Link href="/tee-times">
-          <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4" />
-            <span>티타임</span>
-          </Button>
-        </Link>
-
-        {/* 티타임등록: 매니저이상 */}
-        {checkPermission(userAccountType, 'INTERNAL_MANAGER') && (
-          <Link href="/tee-times/new">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>티타임등록</span>
-            </Button>
-          </Link>
-        )}
-
-        {/* 골프장리스트: 관리자이상 */}
-        {checkPermission(userAccountType, 'ADMIN') && (
-          <Link href="/golf-courses">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-              <MapPin className="h-4 w-4" />
-              <span>골프장관리</span>
-            </Button>
-          </Link>
-        )}
-
-        {/* 실적등록: 매니저이상 */}
-        {checkPermission(userAccountType, 'INTERNAL_MANAGER') && (
-          <Link href="/performance">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-              <BarChart3 className="h-4 w-4" />
-              <span>실적등록</span>
-            </Button>
-          </Link>
-        )}
-
-        {/* 회원관리: 관리자이상 */}
-        {checkPermission(userAccountType, 'ADMIN') && (
-          <Link href="/members">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-              <Users className="h-4 w-4" />
-              <span>회원관리</span>
-            </Button>
-          </Link>
-        )}
-
-        {/* 공지사항: 모두 (읽기만) */}
-        <Link href="/notices">
-          <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-            <ClipboardList className="h-4 w-4" />
-            <span>공지사항</span>
-          </Button>
-        </Link>
+    <nav className="py-2">
+      <div className="flex items-center space-x-1">
+        {visibleMenuItems.map((item, index) => (
+          <div key={item.href} className="flex items-center">
+            <MenuItem
+              href={item.href}
+              icon={item.icon}
+              label={item.label}
+              isActive={item.active}
+            />
+            {index < visibleMenuItems.length - 1 && (
+              <div className="h-4 w-px bg-gray-300 mx-1" />
+            )}
+          </div>
+        ))}
       </div>
     </nav>
   )

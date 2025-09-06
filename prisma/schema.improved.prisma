@@ -1,0 +1,371 @@
+// 개선된 Prisma Schema - 데이터 보존 보장
+// 점진적 마이그레이션을 위한 최적화된 구조
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== 사용자 관리 =====
+model User {
+  id          Int         @id @default(autoincrement())
+  name        String
+  phone       String      @unique
+  password    String
+  accountType AccountType
+  company     String?     @db.VarChar(100) // 소속회사
+  region      Region?     // 담당지역
+  status      UserStatus  @default(ACTIVE)
+  teamId      Int?        // 팀 소속
+  team        Team?       @relation(fields: [teamId], references: [id])
+  managedTeam Team?       @relation("TeamLeader")
+  
+  // 시스템 필드
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  lastLoginAt DateTime?
+  notes       String?     @db.Text // 관리자 메모
+
+  // 관계
+  teeTimes             TeeTime[]            @relation("ManagerTeeTime")
+  confirmedTeeTimes    TeeTime[]            @relation("ConfirmedBy")
+  reservationLogs      ReservationLog[]
+  performances         Performance[]
+  performanceSummaries PerformanceSummary[]
+
+  @@index([accountType, status])
+  @@index([teamId])
+  @@index([phone, password]) // 로그인 최적화
+  @@map("users")
+}
+
+// ===== 팀 관리 =====
+model Team {
+  id                   Int                  @id @default(autoincrement())
+  name                 String               @db.VarChar(50)
+  leaderId             Int                  @unique
+  leader               User                 @relation("TeamLeader", fields: [leaderId], references: [id])
+  members              User[]
+  performanceSummaries PerformanceSummary[]
+  
+  // 시스템 필드
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@map("teams")
+}
+
+// ===== 골프장 관리 =====
+model GolfCourse {
+  id             Int        @id @default(autoincrement())
+  sequence       Int        @unique // 순번
+  name           String     @db.VarChar(100)
+  region         Region
+  address        String     @db.VarChar(200)
+  contact        String     @db.VarChar(50)
+  operStatus     OperStatus // 운영상태
+  notes          String?    @db.Text // 기타
+  defaultPlayers Int        @default(4)
+  isActive       Boolean    @default(true)
+  
+  // 시스템 필드
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // 관계
+  teeTimes             TeeTime[]
+  performanceSummaries PerformanceSummary[]
+
+  @@index([region, operStatus, isActive])
+  @@index([name])
+  @@index([sequence])
+  @@map("golf_courses")
+}
+
+// ===== 티타임 관리 (핵심) =====
+model TeeTime {
+  id       Int @id @default(autoincrement())
+  sequence Int // 순번
+
+  // 골프장 정보
+  golfCourse   GolfCourse @relation(fields: [golfCourseId], references: [id])
+  golfCourseId Int
+  region       Region     // 자동입력
+
+  // 일시 정보
+  date     DateTime @db.Date // 날짜
+  time     DateTime @db.Time // 시간
+  timeSlot TimeSlot // 자동분류
+
+  // 예약 정보
+  greenFee    Decimal     @db.Decimal(10, 1) // 그린피
+  players     Int         @db.SmallInt // 인원
+  bookingType BookingType // 자동분류
+  request     RequestType
+  holes       HoleType
+  caddy       CaddyType
+  prepayment  Boolean
+  meal        Boolean
+  cartFee     Boolean
+
+  // 상태 관리 (10분 타이머)
+  status       TeeTimeStatus @default(AVAILABLE)
+  reservedAt   DateTime?     // 예약시간
+  expiresAt    DateTime?     // 만료시간 (자동계산)
+  confirmedAt  DateTime?     // 확정시간
+  completedAt  DateTime?     // 완료시간
+  cancelledAt  DateTime?     // 취소시간
+  cancelReason String?       @db.VarChar(200)
+
+  // 연결 정보
+  connectedId Int?
+  connected   TeeTime?    @relation("ConnectedTeeTime", fields: [connectedId], references: [id])
+  connections TeeTime[]   @relation("ConnectedTeeTime")
+  lodging     String?     @db.VarChar(200) // 숙박정보
+  type        TeeTimeType // 데일리/패키지
+
+  // 담당자 정보
+  booker        String?   @db.VarChar(50)
+  manager       User?     @relation("ManagerTeeTime", fields: [managerId], references: [id])
+  managerId     Int?
+  confirmedBy   User?     @relation("ConfirmedBy", fields: [confirmedById], references: [id])
+  confirmedById Int?
+
+  // 실적 정산
+  performanceReg Boolean        @default(false)
+  commission     Decimal?       @db.Decimal(10, 2)
+  settlement     SettlementType
+
+  // 시스템 정보
+  apiIntegration Boolean   @default(false)
+  notes          String?   @db.Text
+  version        Int       @default(0) // 낙관적 잠금
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // 소프트 삭제
+
+  // 관계
+  reservationLogs ReservationLog[]
+  performance     Performance?
+
+  // 최적화 인덱스
+  @@index([date, golfCourseId, status])
+  @@index([date, region, timeSlot, status])
+  @@index([status, expiresAt])
+  @@index([managerId, status])
+  @@index([confirmedById, date])
+  @@index([performanceReg, date])
+  @@index([type, bookingType, date])
+  @@index([deletedAt])
+  @@map("tee_times")
+}
+
+// ===== 예약 이력 =====
+model ReservationLog {
+  id             Int               @id @default(autoincrement())
+  teeTimeId      Int
+  teeTime        TeeTime           @relation(fields: [teeTimeId], references: [id], onDelete: Cascade)
+  userId         Int
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action         ReservationAction
+  previousStatus TeeTimeStatus?
+  newStatus      TeeTimeStatus?
+  details        Json?             // 추가 정보
+  createdAt      DateTime          @default(now())
+
+  @@index([teeTimeId, createdAt])
+  @@index([userId, createdAt])
+  @@map("reservation_logs")
+}
+
+// ===== 실적 관리 =====
+model Performance {
+  id        Int     @id @default(autoincrement())
+  teeTimeId Int     @unique
+  teeTime   TeeTime @relation(fields: [teeTimeId], references: [id], onDelete: Restrict)
+
+  // 실적 정보
+  actualPlayers Int     @db.SmallInt
+  actualFee     Decimal @db.Decimal(10, 2)
+  revenue       Decimal @db.Decimal(10, 2)
+  profit        Decimal @db.Decimal(10, 2)
+
+  // 담당자
+  registeredBy   User @relation(fields: [registeredById], references: [id], onDelete: Restrict)
+  registeredById Int
+
+  // 정산
+  settlementStatus SettlementStatus @default(PENDING)
+  settledAt        DateTime?
+
+  // 시스템
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([settlementStatus, createdAt])
+  @@index([registeredById, createdAt])
+  @@map("performances")
+}
+
+// ===== 실적 집계 =====
+model PerformanceSummary {
+  id           Int         @id @default(autoincrement())
+  period       String      @db.VarChar(7) // YYYY-MM
+  userId       Int?
+  user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId       Int?
+  team         Team?       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  golfCourseId Int?
+  golfCourse   GolfCourse? @relation(fields: [golfCourseId], references: [id], onDelete: Cascade)
+  region       Region?
+
+  // 집계 데이터
+  totalBookings Int     @default(0)
+  totalRevenue  Decimal @default(0) @db.Decimal(15, 2)
+  totalProfit   Decimal @default(0) @db.Decimal(15, 2)
+  avgPlayers    Decimal @default(0) @db.Decimal(5, 2)
+
+  calculatedAt DateTime @default(now())
+
+  @@unique([period, userId, teamId, golfCourseId, region])
+  @@index([period, userId])
+  @@index([period, teamId])
+  @@index([period, region])
+  @@map("performance_summaries")
+}
+
+// ===== 시스템 설정 =====
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  category  String   @db.VarChar(50)
+  key       String   @db.VarChar(50)
+  value     Json
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([category, key])
+  @@index([category, isActive])
+  @@map("system_config")
+}
+
+// ===== 공지사항 =====
+model Notice {
+  id                 Int           @id @default(autoincrement())
+  title              String        @db.VarChar(200)
+  content            String        @db.Text
+  isActive           Boolean       @default(true)
+  targetAccountTypes AccountType[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([isActive, createdAt])
+  @@map("notices")
+}
+
+// ===== ENUM 정의 =====
+
+enum AccountType {
+  SUPER_ADMIN
+  ADMIN
+  TEAM_LEADER
+  INTERNAL_MANAGER
+  EXTERNAL_MANAGER
+  PARTNER
+  GOLF_COURSE
+  MEMBER
+}
+
+enum Region {
+  GYEONGGI_NORTH
+  GYEONGGI_SOUTH
+  GYEONGGI_EAST
+  GANGWON
+  GYEONGSANG
+  CHUNGNAM
+  JEOLLA
+  JEJU
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum OperStatus {
+  API_CONNECTED
+  MANUAL
+  STANDBY
+}
+
+enum TimeSlot {
+  SLOT_1 // 1부 (10시 이전)
+  SLOT_2 // 2부 (10시-15시)
+  SLOT_3 // 3부 (15시 이후)
+}
+
+enum BookingType {
+  BOOKING // 부킹 (4명)
+  JOIN    // 조인 (4명 미만)
+}
+
+enum RequestType {
+  ANY
+  COUPLE
+  MALE
+  FEMALE
+}
+
+enum HoleType {
+  HOLE_18
+  HOLE_36
+  HOLE_9
+}
+
+enum CaddyType {
+  CADDY
+  NO_CADDY
+  DRIVING_CADDY
+  TRAINEE_CADDY
+}
+
+enum TeeTimeStatus {
+  AVAILABLE
+  RESERVED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  EXPIRED // 10분 타이머 만료
+}
+
+enum ReservationAction {
+  RESERVE
+  CONFIRM
+  CANCEL
+  EXPIRE
+  COMPLETE
+  UPDATE
+}
+
+enum SettlementStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TeeTimeType {
+  DAILY
+  PACKAGE
+}
+
+enum SettlementType {
+  PREPAYMENT
+  POST_SETTLEMENT
+}

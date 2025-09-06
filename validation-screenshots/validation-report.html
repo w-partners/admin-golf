@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>엑셀 페이지 검증 리포트</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { color: #333; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }
+    .stats { display: flex; gap: 20px; margin: 20px 0; }
+    .stat { flex: 1; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat.success { background: #e8f5e9; color: #2e7d32; }
+    .stat.fail { background: #ffebee; color: #c62828; }
+    .stat.warning { background: #fff3e0; color: #ef6c00; }
+    .result-item { margin: 20px 0; padding: 15px; border-left: 4px solid #ddd; background: #fafafa; }
+    .result-item.success { border-color: #4CAF50; }
+    .result-item.fail { border-color: #f44336; }
+    .result-item.warning { border-color: #ff9800; }
+    .screenshot { margin-top: 10px; max-width: 100%; border: 1px solid #ddd; }
+    .status { font-weight: bold; margin-bottom: 5px; }
+    .details { color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 골프장 예약 시스템 - 엑셀 페이지 검증 리포트</h1>
+    <p>📅 검증 시간: 2025. 9. 6. 오전 10:22:47</p>
+    <p>🔗 테스트 URL: http://localhost:3005/demo</p>
+    
+    <div class="stats">
+      <div class="stat success">
+        <h2>0</h2>
+        <p>성공</p>
+      </div>
+      <div class="stat fail">
+        <h2>7</h2>
+        <p>실패</p>
+      </div>
+      <div class="stat warning">
+        <h2>4</h2>
+        <p>경고</p>
+      </div>
+    </div>
+    
+    <h2>📝 상세 검증 결과</h2>
+    
+      <div class="result-item fail">
+        <div class="status">❌ 실패 페이지 로딩</div>
+        <div class="details">에러: Error: 페이지 응답 실패: 500</div>
+        
+      </div>
+    
+      <div class="result-item fail">
+        <div class="status">❌ 실패 탭 전환: 데일리부킹</div>
+        <div class="details">에러: TimeoutError: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("데일리부킹")')[22m
+</div>
+        
+      </div>
+    
+      <div class="result-item fail">
+        <div class="status">❌ 실패 탭 전환: 데일리조인</div>
+        <div class="details">에러: TimeoutError: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("데일리조인")')[22m
+</div>
+        
+      </div>
+    
+      <div class="result-item fail">
+        <div class="status">❌ 실패 탭 전환: 패키지부킹</div>
+        <div class="details">에러: TimeoutError: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("패키지부킹")')[22m
+</div>
+        
+      </div>
+    
+      <div class="result-item fail">
+        <div class="status">❌ 실패 탭 전환: 패키지조인</div>
+        <div class="details">에러: TimeoutError: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("패키지조인")')[22m
+</div>
+        
+      </div>
+    
+      <div class="result-item fail">
+        <div class="status">❌ 실패 동적 데이터</div>
+        <div class="details">에러: TimeoutError: page.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('button:has-text("데일리부킹")')[22m
+</div>
+        
+      </div>
+    
+      <div class="result-item fail">
+        <div class="status">❌ 실패 새로고침 버튼</div>
+        <div class="details">에러: Error: 새로고침 버튼을 찾을 수 없음</div>
+        
+      </div>
+    
+      <div class="result-item warning">
+        <div class="status">⚠️ 경고 색상 구분: 1부</div>
+        <div class="details">1부 색상을 확인할 수 없습니다</div>
+        
+      </div>
+    
+      <div class="result-item warning">
+        <div class="status">⚠️ 경고 색상 구분: 2부</div>
+        <div class="details">2부 색상을 확인할 수 없습니다</div>
+        
+      </div>
+    
+      <div class="result-item warning">
+        <div class="status">⚠️ 경고 색상 구분: 3부</div>
+        <div class="details">3부 색상을 확인할 수 없습니다</div>
+        <img src="07-color-scheme-1757121763887.png" class="screenshot" alt="색상 구분: 3부">
+      </div>
+    
+      <div class="result-item warning">
+        <div class="status">⚠️ 경고 오늘 날짜 강조</div>
+        <div class="details">오늘 날짜 강조를 확인할 수 없습니다</div>
+        
+      </div>
+    
+  </div>
+</body>
+</html>
+    
