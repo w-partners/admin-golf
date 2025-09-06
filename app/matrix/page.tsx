@@ -5,6 +5,7 @@ import { MatrixView } from '@/components/tee-time/MatrixView';
 import { Button } from '@/components/ui/button';
 import { Plus, RefreshCw } from 'lucide-react';
 import { TeeTimeDialog } from '@/components/tee-time/TeeTimeDialog';
+import { BRANDING } from '@/constants/branding';
 
 export default function MatrixPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -24,7 +25,7 @@ export default function MatrixPage() {
         <div className="max-w-[1920px] mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">골프장 예약 관리 시스템</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{BRANDING.SYSTEM_NAME}</h1>
               <p className="text-sm text-gray-500 mt-1">실시간 티타임 현황 - 엑셀 뷰</p>
             </div>
             <div className="flex items-center gap-3">

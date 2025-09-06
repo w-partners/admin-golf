@@ -114,18 +114,22 @@ This is a **골프장 예약 관리 시스템 (Golf Course Reservation Managemen
 
 ## Development Commands
 
-**Note**: This project appears to be in planning/design phase. No package.json or standard build commands found yet.
+**Server Configuration**:
+- **Fixed Port**: 3007
+- **Development URL**: http://localhost:3007
+- **Login Credentials**: 01034424668 / admin1234
 
-Based on the implementation plan, expect these commands once implemented:
-- `npm run dev` - Development server
+**Available Commands**:
+- `npm run dev` - Development server (port 3007)
 - `npm run build` - Production build
+- `npm run start` - Production server
 - `npm run lint` - ESLint
 - `npm run type-check` - TypeScript checks
+- `npm run quality` - Run lint and type-check
 - `npm run test` - Unit tests
 - `npm run test:e2e` - Playwright E2E tests
-- `npx prisma generate` - Generate Prisma client
-- `npx prisma db push` - Push schema changes
-- `npx prisma db seed` - Seed database
+- `npm run db:push` - Push schema changes
+- `npm run db:seed` - Seed database
 
 ## Testing
 

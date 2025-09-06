@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { matrixQuerySchema, validateRequest } from '@/lib/validators/api'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -61,26 +60,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     
-    // 입력값 검증
-    const queryParams = {
-      type: searchParams.get('type') || undefined,
-      booking: searchParams.get('booking') || undefined,
-      days: searchParams.get('days') || undefined
-    }
-    
-    const validation = validateRequest(queryParams, matrixQuerySchema)
-    
-    if (!validation.success) {
-      return NextResponse.json(
-        { 
-          error: '잘못된 요청 파라미터입니다',
-          details: validation.errors.format()
-        },
-        { status: 400 }
-      )
-    }
-    
-    const { type: teeTimeType, booking: bookingType, days } = validation.data
+    const teeTimeType = searchParams.get('type') || 'DAILY'
+    const bookingType = searchParams.get('booking') || 'BOOKING'
+    const days = parseInt(searchParams.get('days') || '90')
     
     // 날짜 컬럼 생성
     const dateColumns = generateDateColumns(days)
@@ -100,14 +82,13 @@ export async function GET(request: NextRequest) {
     const matrixData = existingRegions.map(region => {
       const regionalCourses = golfCourses.filter(gc => gc.region === region)
       
-      // 골프장이 없는 지역은 빈 배열 반환 (지역은 표시되지만 골프장 행은 없음)
       return {
         region,
         golfCourses: regionalCourses.map(course => ({
           id: course.id,
           name: course.name,
           dates: dateColumns.map((dateCol, dateIndex) => {
-            const counts = generateTeeTimeCounts(teeTimeType, bookingType, course.id, dateIndex)
+            const counts = generateTeeTimeCounts(teeTimeType, bookingType, course.id.toString(), dateIndex)
             return {
               date: dateCol.date,
               ...counts,
@@ -117,9 +98,6 @@ export async function GET(request: NextRequest) {
         }))
       }
     })
-    
-    // 빈 지역은 제거 (골프장이 하나도 없는 지역)
-    const filteredMatrixData = matrixData.filter(regionData => regionData.golfCourses.length > 0)
     
     // 요약 정보 계산
     const totalGolfCourses = golfCourses.length
@@ -132,7 +110,7 @@ export async function GET(request: NextRequest) {
     }, 0)
     
     const response = {
-      matrixData: filteredMatrixData,
+      matrixData,
       dateColumns,
       summary: {
         totalGolfCourses,

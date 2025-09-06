@@ -20,6 +20,7 @@ import { ArrowLeft, Save, Users, Calendar, Trophy, Phone, Crown } from "lucide-r
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
+import { ACCOUNT_TYPE_LABELS, getAccountTypeLabel, getAccountTypeBadgeColor } from '@/constants/userTypes'
 
 const userUpdateSchema = z.object({
   name: z.string().min(2, "이름은 2자 이상이어야 합니다").max(50, "이름은 50자 이하여야 합니다"),
@@ -91,27 +92,6 @@ interface Team {
   }
 }
 
-const accountTypeLabels = {
-  SUPER_ADMIN: '최고관리자',
-  ADMIN: '관리자',
-  TEAM_LEADER: '팀장',
-  INTERNAL_MANAGER: '내부매니저',
-  EXTERNAL_MANAGER: '외부매니저',
-  PARTNER: '파트너',
-  GOLF_COURSE: '골프장',
-  MEMBER: '회원'
-}
-
-const accountTypeColors = {
-  SUPER_ADMIN: 'bg-purple-100 text-purple-800',
-  ADMIN: 'bg-red-100 text-red-800',
-  TEAM_LEADER: 'bg-blue-100 text-blue-800',
-  INTERNAL_MANAGER: 'bg-green-100 text-green-800',
-  EXTERNAL_MANAGER: 'bg-yellow-100 text-yellow-800',
-  PARTNER: 'bg-orange-100 text-orange-800',
-  GOLF_COURSE: 'bg-gray-100 text-gray-800',
-  MEMBER: 'bg-slate-100 text-slate-800'
-}
 
 interface Props {
   params: {
@@ -303,9 +283,9 @@ export default function MemberDetailPage({ params }: Props) {
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">{user.name}</h1>
-              <Badge className={accountTypeColors[user.accountType as keyof typeof accountTypeColors]}>
+              <Badge className={getAccountTypeBadgeColor(user.accountType)}>
                 {user.accountType === 'TEAM_LEADER' && <Crown className="h-3 w-3 mr-1" />}
-                {accountTypeLabels[user.accountType as keyof typeof accountTypeLabels]}
+                {getAccountTypeLabel(user.accountType)}
               </Badge>
               <Badge variant={user.isActive ? "default" : "secondary"}>
                 {user.isActive ? "활성" : "비활성"}
@@ -380,7 +360,7 @@ export default function MemberDetailPage({ params }: Props) {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {Object.entries(accountTypeLabels).map(([value, label]) => (
+                              {Object.entries(ACCOUNT_TYPE_LABELS).map(([value, label]) => (
                                 <SelectItem key={value} value={value}>
                                   {label}
                                 </SelectItem>

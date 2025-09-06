@@ -16,6 +16,7 @@ import {
   FileText,
   Trophy
 } from 'lucide-react'
+import { COMMON_TEXTS } from '@/constants/commonTexts'
 
 interface QuickMenuProps {
   isMobile?: boolean
@@ -93,56 +94,56 @@ export function QuickMenu({ isMobile = false, onNavigate }: QuickMenuProps) {
     {
       href: '/',
       icon: <Home className="h-4 w-4" />,
-      label: '대시보드',
+      label: COMMON_TEXTS.MENU_ITEMS.DASHBOARD,
       show: true,
       active: pathname === '/'
     },
     {
       href: '/tee-times',
       icon: <Calendar className="h-4 w-4" />,
-      label: '티타임 조회',
+      label: COMMON_TEXTS.MENU_ITEMS.TEE_TIME_VIEW,
       show: canAccessTeeTime,
       active: pathname.startsWith('/tee-times') && !pathname.includes('/new')
     },
     {
       href: '/tee-times/new',
       icon: <Plus className="h-4 w-4" />,
-      label: '티타임 등록',
+      label: COMMON_TEXTS.MENU_ITEMS.TEE_TIME_CREATE,
       show: canCreateTeeTime,
       active: pathname === '/tee-times/new'
     },
     {
       href: '/golf-courses',
       icon: <MapPin className="h-4 w-4" />,
-      label: '골프장 관리',
+      label: COMMON_TEXTS.MENU_ITEMS.GOLF_COURSE,
       show: canAccessGolfCourse,
       active: pathname.startsWith('/golf-courses')
     },
     {
       href: '/performance',
       icon: <BarChart3 className="h-4 w-4" />,
-      label: '실적 관리',
+      label: COMMON_TEXTS.MENU_ITEMS.PERFORMANCE,
       show: canAccessPerformance,
       active: pathname.startsWith('/performance')
     },
     {
       href: '/members',
       icon: <Users className="h-4 w-4" />,
-      label: '회원 관리',
+      label: COMMON_TEXTS.MENU_ITEMS.MEMBERS,
       show: canAccessMembers,
       active: pathname.startsWith('/members')
     },
     {
       href: '/team',
       icon: <Trophy className="h-4 w-4" />,
-      label: '팀 관리',
+      label: COMMON_TEXTS.MENU_ITEMS.TEAM,
       show: canAccessTeam,
       active: pathname.startsWith('/team')
     },
     {
       href: '/notices',
       icon: <FileText className="h-4 w-4" />,
-      label: '공지사항',
+      label: COMMON_TEXTS.MENU_ITEMS.NOTICES,
       show: canAccessNotices,
       active: pathname.startsWith('/notices')
     }

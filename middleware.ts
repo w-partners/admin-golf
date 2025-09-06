@@ -44,8 +44,8 @@ export default auth((req) => {
     return NextResponse.next()
   }
 
-  // API 라우트는 NextAuth 경로 제외하고 세션 체크 (matrix API는 테스트를 위해 임시 허용)
-  if (pathname.startsWith('/api') && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/tee-times/matrix')) {
+  // API 라우트는 NextAuth 경로와 public API 제외하고 세션 체크
+  if (pathname.startsWith('/api') && !pathname.startsWith('/api/auth') && !pathname.startsWith('/api/public')) {
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -75,10 +75,11 @@ export const config = {
     /*
      * 다음 경로들을 제외한 모든 요청에 대해 실행:
      * - api/auth (NextAuth 경로)
+     * - api/public (Public API 경로)
      * - _next/static (정적 파일)
      * - _next/image (이미지 최적화 파일)
      * - favicon.ico (파비콘)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)'
+    '/((?!api/auth|api/public|_next/static|_next/image|favicon.ico).*)'
   ]
 }

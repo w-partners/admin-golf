@@ -16,6 +16,8 @@ import {
   CheckCircle
 } from 'lucide-react'
 import Link from 'next/link'
+import { BRANDING } from '@/constants/branding'
+import { getAccountTypeLabel } from '@/constants/userTypes'
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -43,173 +45,114 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      {/* 환영 메시지 */}
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          안녕하세요, {session.user.name}님! 👋
-        </h1>
-        <p className="text-gray-600">
-          골프장 예약 관리 시스템에 오신 것을 환영합니다.
-        </p>
-        <div className="mt-2 text-sm text-blue-600">
-          현재 권한: {
-            userAccountType === 'SUPER_ADMIN' ? '최고관리자' :
-            userAccountType === 'ADMIN' ? '관리자' :
-            userAccountType === 'TEAM_LEADER' ? '팀장' :
-            userAccountType === 'INTERNAL_MANAGER' ? '내부매니저' :
-            userAccountType === 'EXTERNAL_MANAGER' ? '외부매니저' :
-            userAccountType === 'PARTNER' ? '파트너' :
-            userAccountType === 'GOLF_COURSE' ? '골프장' :
-            '회원'
-          }
+      {/* 환영 메시지 - 현대적 디자인 */}
+      <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl shadow-xl p-8 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-3">
+              안녕하세요, {session.user.name}님!
+            </h1>
+            <p className="text-emerald-50 text-lg">
+              {BRANDING.WELCOME_MESSAGE}
+            </p>
+            <div className="mt-4 inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur rounded-lg border border-white/30">
+              <span className="text-sm font-semibold">
+                접속 시간: {new Date().toLocaleTimeString('ko-KR')}
+              </span>
+            </div>
+          </div>
+          <div className="text-6xl opacity-30">
+            ⛳
+          </div>
         </div>
       </div>
 
-      {/* 퀵 액션 카드들 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* 티타임 조회 */}
-        <Link href="/tee-times">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">티타임 조회</CardTitle>
-                <Calendar className="h-5 w-5 text-blue-500" />
+      {/* 통계 개요 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">오늘 예약</p>
+                <p className="text-3xl font-bold text-blue-600">0</p>
               </div>
-              <CardDescription>
-                예약 가능한 티타임을 확인하세요
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Clock className="h-4 w-4" />
-                <span>실시간 업데이트</span>
+              <Calendar className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">이번 달</p>
+                <p className="text-3xl font-bold text-green-600">0</p>
               </div>
-            </CardContent>
-          </Card>
-        </Link>
+              <BarChart3 className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* 티타임 등록 (매니저 이상) */}
-        {['INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER', 'TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType) && (
-          <Link href="/tee-times/new">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">티타임 등록</CardTitle>
-                  <Plus className="h-5 w-5 text-green-500" />
-                </div>
-                <CardDescription>
-                  새로운 티타임을 등록하세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <CheckCircle className="h-4 w-4" />
-                  <span>즉시 등록 가능</span>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">등록된 골프장</p>
+                <p className="text-3xl font-bold text-purple-600">0</p>
+                <p className="text-xs text-gray-500 mt-1">관리자가 등록 필요</p>
+              </div>
+              <MapPin className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* 골프장 관리 (관리자 이상) */}
-        {['ADMIN', 'SUPER_ADMIN'].includes(userAccountType) && (
-          <Link href="/golf-courses">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">골프장 관리</CardTitle>
-                  <MapPin className="h-5 w-5 text-purple-500" />
-                </div>
-                <CardDescription>
-                  골프장 정보를 관리하세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <span>8개 지역별 관리</span>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
-
-        {/* 실적 관리 (매니저 이상) */}
-        {['INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER', 'TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType) && (
-          <Link href="/performance">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">실적 관리</CardTitle>
-                  <BarChart3 className="h-5 w-5 text-orange-500" />
-                </div>
-                <CardDescription>
-                  완료된 예약의 실적을 관리하세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>성과 분석 가능</span>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">등록된 회원</p>
+                <p className="text-3xl font-bold text-orange-600">8</p>
+                <p className="text-xs text-gray-500 mt-1">테스트 계정 포함</p>
+              </div>
+              <Users className="h-8 w-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 최근 활동 및 공지사항 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 최근 활동 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>최근 활동</CardTitle>
-            <CardDescription>
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
+            <CardTitle className="text-lg font-bold text-gray-800">최근 활동</CardTitle>
+            <CardDescription className="text-gray-600 font-medium">
               최근 티타임 예약 현황을 확인하세요
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-sm text-gray-500">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span>시스템이 정상적으로 운영 중입니다</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>데이터베이스 연결 상태: 양호</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span>개발 환경에서 실행 중</span>
-              </div>
+          <CardContent className="pt-6">
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm">최근 활동이 표시됩니다</p>
             </div>
           </CardContent>
         </Card>
 
         {/* 공지사항 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>공지사항</CardTitle>
-            <CardDescription>
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
+            <CardTitle className="text-lg font-bold text-gray-800">공지사항</CardTitle>
+            <CardDescription className="text-gray-600 font-medium">
               중요한 시스템 공지를 확인하세요
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <div className="font-medium text-blue-900 text-sm mb-1">
-                  시스템 초기화 완료
-                </div>
-                <div className="text-blue-700 text-xs">
-                  골프장 예약 관리 시스템이 성공적으로 구축되었습니다.
-                </div>
+          <CardContent className="pt-6">
+            <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+              <div className="font-bold text-emerald-900 text-sm mb-2">
+                시스템 준비 완료
               </div>
-              <div className="p-3 bg-green-50 rounded-lg">
-                <div className="font-medium text-green-900 text-sm mb-1">
-                  테스트 계정 활성화
-                </div>
-                <div className="text-green-700 text-xs">
-                  모든 권한별 테스트 계정이 준비되었습니다.
-                </div>
+              <div className="text-emerald-700 text-sm leading-relaxed">
+                {BRANDING.SYSTEM_NAME}이 정상 운영 중입니다.
               </div>
             </div>
           </CardContent>

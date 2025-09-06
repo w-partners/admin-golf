@@ -148,55 +148,9 @@ async function main() {
     console.log(`   ✅ Created team: ${team.name}`);
   }
 
-  // 3. 골프장 생성
-  const golfCourses = [
-    // 제주
-    { sequence: 1, name: '취곡CC', region: Region.JEJU, address: '제주특별자치도 서귀포시', contact: '064-738-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 2, name: '포도CC', region: Region.JEJU, address: '제주특별자치도 서귀포시', contact: '064-792-1234', operStatus: OperStatus.MANUAL },
-    { sequence: 3, name: '라온CC', region: Region.JEJU, address: '제주특별자치도 제주시', contact: '064-799-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 4, name: '해비치CC', region: Region.JEJU, address: '제주특별자치도 서귀포시', contact: '064-790-1234', operStatus: OperStatus.API_CONNECTED },
-    
-    // 경기남부
-    { sequence: 5, name: '신원CC', region: Region.GYEONGGI_SOUTH, address: '경기도 용인시', contact: '031-334-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 6, name: '렉스필드CC', region: Region.GYEONGGI_SOUTH, address: '경기도 용인시', contact: '031-332-1234', operStatus: OperStatus.MANUAL },
-    { sequence: 7, name: '골든베이CC', region: Region.GYEONGGI_SOUTH, address: '경기도 화성시', contact: '031-369-1234', operStatus: OperStatus.API_CONNECTED },
-    
-    // 경기북부
-    { sequence: 8, name: '아시아나CC', region: Region.GYEONGGI_NORTH, address: '경기도 파주시', contact: '031-949-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 9, name: '서원밸리CC', region: Region.GYEONGGI_NORTH, address: '경기도 파주시', contact: '031-958-1234', operStatus: OperStatus.MANUAL },
-    
-    // 경기동부
-    { sequence: 10, name: '리베라CC', region: Region.GYEONGGI_EAST, address: '경기도 여주시', contact: '031-881-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 11, name: '솔모로CC', region: Region.GYEONGGI_EAST, address: '경기도 여주시', contact: '031-884-1234', operStatus: OperStatus.MANUAL },
-    
-    // 강원
-    { sequence: 12, name: '비발디파크CC', region: Region.GANGWON, address: '강원도 홍천군', contact: '033-439-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 13, name: '파인리즈CC', region: Region.GANGWON, address: '강원도 원주시', contact: '033-731-1234', operStatus: OperStatus.MANUAL },
-    
-    // 충남
-    { sequence: 14, name: '실크리버CC', region: Region.CHUNGNAM, address: '충청남도 천안시', contact: '041-560-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 15, name: '골드레이크CC', region: Region.CHUNGNAM, address: '충청남도 아산시', contact: '041-543-1234', operStatus: OperStatus.MANUAL },
-    
-    // 경상
-    { sequence: 16, name: '통도파인이스트CC', region: Region.GYEONGSANG, address: '경상남도 양산시', contact: '055-370-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 17, name: '에덴밸리CC', region: Region.GYEONGSANG, address: '경상북도 경주시', contact: '054-745-1234', operStatus: OperStatus.MANUAL },
-    
-    // 전라
-    { sequence: 18, name: '남원CC', region: Region.JEOLLA, address: '전라북도 남원시', contact: '063-630-1234', operStatus: OperStatus.API_CONNECTED },
-    { sequence: 19, name: '무주덕유산CC', region: Region.JEOLLA, address: '전라북도 무주군', contact: '063-322-1234', operStatus: OperStatus.MANUAL }
-  ];
-
-  console.log('⛳ Creating golf courses...');
-  for (const gcData of golfCourses) {
-    const gc = await prisma.golfCourse.upsert({
-      where: { 
-        id: gcData.sequence  // sequence를 id로 사용
-      },
-      update: gcData,
-      create: gcData
-    });
-    console.log(`   ✅ Created golf course: ${gc.name} (${getRegionName(gc.region)})`);
-  }
+  // 3. 골프장 생성 - 빈 상태로 시작 (관리자가 등록해야 함)
+  console.log('⛳ Skipping golf course creation - to be managed by administrators');
+  console.log('   ℹ️  Golf courses should be registered through the admin interface');
 
   // 4. 시스템 설정
   console.log('⚙️ Creating system configurations...');

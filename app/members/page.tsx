@@ -27,6 +27,7 @@ import {
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
+import { ACCOUNT_TYPE_LABELS, getAccountTypeLabel, getAccountTypeBadgeColor } from '@/constants/userTypes'
 
 interface User {
   id: string
@@ -53,27 +54,6 @@ interface User {
   }
 }
 
-const accountTypeLabels = {
-  SUPER_ADMIN: '최고관리자',
-  ADMIN: '관리자',
-  TEAM_LEADER: '팀장',
-  INTERNAL_MANAGER: '내부매니저',
-  EXTERNAL_MANAGER: '외부매니저',
-  PARTNER: '파트너',
-  GOLF_COURSE: '골프장',
-  MEMBER: '회원'
-}
-
-const accountTypeColors = {
-  SUPER_ADMIN: 'bg-purple-100 text-purple-800',
-  ADMIN: 'bg-red-100 text-red-800',
-  TEAM_LEADER: 'bg-blue-100 text-blue-800',
-  INTERNAL_MANAGER: 'bg-green-100 text-green-800',
-  EXTERNAL_MANAGER: 'bg-yellow-100 text-yellow-800',
-  PARTNER: 'bg-orange-100 text-orange-800',
-  GOLF_COURSE: 'bg-gray-100 text-gray-800',
-  MEMBER: 'bg-slate-100 text-slate-800'
-}
 
 export default function MembersPage() {
   const { data: session, status } = useSession()
@@ -182,8 +162,8 @@ export default function MembersPage() {
 
   const getAccountTypeBadge = (accountType: string) => {
     return (
-      <Badge className={accountTypeColors[accountType as keyof typeof accountTypeColors]}>
-        {accountTypeLabels[accountType as keyof typeof accountTypeLabels]}
+      <Badge className={getAccountTypeBadgeColor(accountType)}>
+        {getAccountTypeLabel(accountType)}
       </Badge>
     )
   }
@@ -273,7 +253,7 @@ export default function MembersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="전체">전체 유형</SelectItem>
-                  {Object.entries(accountTypeLabels).map(([value, label]) => (
+                  {Object.entries(ACCOUNT_TYPE_LABELS).map(([value, label]) => (
                     <SelectItem key={value} value={value}>{label}</SelectItem>
                   ))}
                 </SelectContent>

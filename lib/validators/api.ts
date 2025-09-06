@@ -4,13 +4,16 @@ import { z } from 'zod';
 export const matrixQuerySchema = z.object({
   type: z.enum(['DAILY', 'PACKAGE']).optional().default('DAILY'),
   booking: z.enum(['BOOKING', 'JOIN']).optional().default('BOOKING'),
-  days: z.coerce.number().min(1).max(90).optional().default(90)
+  days: z.string().optional().default('90').transform((val) => {
+    const num = parseInt(val, 10)
+    return isNaN(num) ? 90 : Math.min(Math.max(num, 1), 90)
+  })
 });
 
 // 티타임 생성 스키마
 export const teeTimeCreateSchema = z.object({
   golfCourseId: z.number().positive(),
-  date: z.string().datetime(),
+  date: z.string().refine((date) => !isNaN(Date.parse(date)), "Invalid date format"),
   time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/),
   greenFee: z.number().positive().max(1000000),
   players: z.number().min(1).max(4),
@@ -132,16 +135,22 @@ export const performanceSchema = z.object({
 
 // 페이지네이션 스키마
 export const paginationSchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(20),
+  page: z.string().optional().default('1').transform((val) => {
+    const num = parseInt(val, 10)
+    return isNaN(num) ? 1 : Math.max(num, 1)
+  }),
+  limit: z.string().optional().default('20').transform((val) => {
+    const num = parseInt(val, 10)
+    return isNaN(num) ? 20 : Math.min(Math.max(num, 1), 100)
+  }),
   sortBy: z.string().optional(),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc')
 });
 
 // 날짜 범위 스키마
 export const dateRangeSchema = z.object({
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime()
+  startDate: z.string().refine((date) => !isNaN(Date.parse(date)), "Invalid start date format"),
+  endDate: z.string().refine((date) => !isNaN(Date.parse(date)), "Invalid end date format")
 }).refine((data) => new Date(data.startDate) <= new Date(data.endDate), {
   message: "시작일은 종료일보다 이전이어야 합니다",
   path: ["endDate"],
@@ -155,7 +164,13 @@ export const searchSchema = z.object({
 
 // ID 파라미터 스키마
 export const idParamSchema = z.object({
-  id: z.coerce.number().positive()
+  id: z.string().transform((val) => {
+    const num = parseInt(val, 10)
+    if (isNaN(num) || num <= 0) {
+      throw new Error('Invalid ID: must be a positive number')
+    }
+    return num
+  })
 });
 
 // 유효성 검증 헬퍼 함수

@@ -195,131 +195,13 @@ export const seedTestData = async () => {
     }),
   ])
 
-  // 티타임 생성
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  
-  const teeTimes = await Promise.all([
-    // 내일 1부 티타임
-    prisma.teeTime.create({
-      data: {
-        id: 'teetime-1',
-        golfCourseId: 'golf-course-1',
-        date: tomorrow,
-        time: '07:00',
-        timeSlot: '1부',
-        greenFee: 12.0,
-        players: 4,
-        bookingType: '부킹',
-        requirements: '조용한 라운딩 희망',
-        holes: '18홀',
-        caddy: '포함',
-        prepayment: 6.0,
-        mealIncluded: true,
-        cartIncluded: true,
-        status: 'AVAILABLE',
-      },
-    }),
-    // 내일 2부 티타임
-    prisma.teeTime.create({
-      data: {
-        id: 'teetime-2',
-        golfCourseId: 'golf-course-1',
-        date: tomorrow,
-        time: '11:00',
-        timeSlot: '2부',
-        greenFee: 15.0,
-        players: 3,
-        bookingType: '조인',
-        requirements: '초보자 환영',
-        holes: '18홀',
-        caddy: '포함',
-        prepayment: 7.5,
-        mealIncluded: true,
-        cartIncluded: true,
-        status: 'AVAILABLE',
-      },
-    }),
-    // 내일 3부 티타임
-    prisma.teeTime.create({
-      data: {
-        id: 'teetime-3',
-        golfCourseId: 'golf-course-2',
-        date: tomorrow,
-        time: '16:00',
-        timeSlot: '3부',
-        greenFee: 10.0,
-        players: 2,
-        bookingType: '조인',
-        requirements: '빠른 라운딩',
-        holes: '9홀',
-        caddy: '미포함',
-        prepayment: 5.0,
-        mealIncluded: false,
-        cartIncluded: true,
-        status: 'AVAILABLE',
-      },
-    }),
-    // 예약된 티타임
-    prisma.teeTime.create({
-      data: {
-        id: 'teetime-reserved',
-        golfCourseId: 'golf-course-1',
-        date: tomorrow,
-        time: '08:00',
-        timeSlot: '1부',
-        greenFee: 13.0,
-        players: 4,
-        bookingType: '부킹',
-        requirements: '비즈니스 라운딩',
-        holes: '18홀',
-        caddy: '포함',
-        prepayment: 6.5,
-        mealIncluded: true,
-        cartIncluded: true,
-        status: 'RESERVED',
-        reservedBy: 'user-internal-manager',
-        reservedAt: new Date(),
-      },
-    }),
-    // 확정된 티타임
-    prisma.teeTime.create({
-      data: {
-        id: 'teetime-confirmed',
-        golfCourseId: 'golf-course-2',
-        date: tomorrow,
-        time: '09:00',
-        timeSlot: '1부',
-        greenFee: 14.0,
-        players: 4,
-        bookingType: '부킹',
-        requirements: '가족 라운딩',
-        holes: '18홀',
-        caddy: '포함',
-        prepayment: 7.0,
-        mealIncluded: true,
-        cartIncluded: true,
-        status: 'CONFIRMED',
-        reservedBy: 'user-partner',
-        reservedAt: new Date(Date.now() - 5 * 60 * 1000),
-        confirmedBy: 'user-admin',
-        confirmedAt: new Date(),
-      },
-    }),
-  ])
+  // 티타임 데이터는 하드코딩하지 않고 동적으로만 생성
+  // 테스트에서 필요한 경우 개별적으로 생성해서 사용
+  console.log('   ℹ️  TeeTime data should be created dynamically in each test')
+  const teeTimes: any[] = []
 
-  // 연결된 티타임 (패키지) 생성
-  const nextWeek = new Date()
-  nextWeek.setDate(nextWeek.getDate() + 7)
-  
-  await prisma.connectedTeeTime.create({
-    data: {
-      id: 'connected-1',
-      primaryTeeTimeId: 'teetime-1',
-      connectedTeeTimeId: 'teetime-2',
-      accommodationInfo: '제주 테스트호텔 2박',
-    },
-  })
+  // 연결된 티타임도 하드코딩하지 않고 동적으로만 생성
+  console.log('   ℹ️  Connected TeeTime data should be created dynamically in each test')
 
   return {
     users,

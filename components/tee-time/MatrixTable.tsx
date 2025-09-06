@@ -187,13 +187,13 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
       {/* 테이블 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">{title}</h2>
           {summary && (
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Badge variant="secondary">
+            <div className="flex items-center space-x-2">
+              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 font-semibold">
                 골프장 {summary.totalGolfCourses}개
               </Badge>
-              <Badge variant="secondary">
+              <Badge className="bg-blue-100 text-blue-700 border-blue-200 font-semibold">
                 티타임 {summary.totalTeeTimes}개
               </Badge>
             </div>
@@ -205,14 +205,15 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
+            className="border-gray-300 hover:bg-gray-50"
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-blue-500' : 'text-gray-600'}`} />
           </Button>
           <Button
-            variant="outline"
             size="sm"
             onClick={scrollToToday}
             title="오늘로 이동"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
           >
             오늘
           </Button>
@@ -221,44 +222,46 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
             size="sm"
             onClick={() => handleScroll('left')}
             title="이전"
+            className="border-gray-300 hover:bg-gray-50"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 text-gray-600" />
           </Button>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => handleScroll('right')}
             title="다음"
+            className="border-gray-300 hover:bg-gray-50"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 text-gray-600" />
           </Button>
         </div>
       </div>
 
       {/* 매트릭스 테이블 - 엑셀 스타일 */}
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-lg">
+      <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xl">
         <div className="flex">
           {/* 좌측 고정 영역 - 지역/골프장 */}
-          <div className="flex-shrink-0 bg-gray-50 border-r-2 border-gray-300 sticky left-0 z-10">
+          <div className="flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 border-r-2 border-gray-300 sticky left-0 z-10">
             {/* 헤더 */}
-            <div className="flex border-b-2 border-gray-300 bg-gradient-to-b from-gray-100 to-gray-200">
-              <div className="w-24 p-3 border-r border-gray-300 font-bold text-center text-sm">지역</div>
-              <div className="w-32 p-3 font-bold text-center text-sm">골프장</div>
+            <div className="flex border-b-2 border-gray-300 bg-gradient-to-r from-emerald-600 to-green-600">
+              <div className="w-24 p-3 border-r border-emerald-700/30 font-bold text-center text-sm text-white">지역</div>
+              <div className="w-32 p-3 font-bold text-center text-sm text-white">골프장</div>
             </div>
             
             {/* 데이터 행들 */}
             {matrixData.map(regionData => 
               regionData.golfCourses.map((course, courseIndex) => (
-                <div key={course.id} className="flex border-b border-gray-200 hover:bg-gray-100 transition-colors">
+                <div key={course.id} className="flex border-b border-gray-200 hover:bg-emerald-50/50 transition-all duration-200">
                   <div className="w-24 p-3 border-r border-gray-200 flex items-center justify-center bg-white">
                     {courseIndex === 0 && (
-                      <div className="flex items-center space-x-1 text-xs font-bold text-gray-700">
-                        <MapPin className="h-3 w-3 text-blue-500" />
-                        <span>{regionData.region}</span>
+                      <div className="flex items-center space-x-1">
+                        <MapPin className="h-4 w-4 text-emerald-600" />
+                        <span className="text-xs font-bold text-gray-800">{regionData.region}</span>
                       </div>
                     )}
                   </div>
-                  <div className="w-32 p-3 flex items-center text-sm font-semibold text-gray-800 bg-white">
+                  <div className="w-32 p-3 flex items-center text-sm font-semibold text-gray-900 bg-white">
                     {course.name}
                   </div>
                 </div>
@@ -274,24 +277,24 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
           >
             <div className="min-w-max">
               {/* 날짜 헤더 */}
-              <div className="flex border-b-2 border-gray-300 bg-gradient-to-b from-gray-100 to-gray-200 sticky top-0 z-5">
+              <div className="flex border-b-2 border-gray-300 bg-gradient-to-b from-white to-gray-50 sticky top-0 z-5">
                 {dateColumns.map(dateCol => (
                   <div 
                     key={dateCol.date}
                     className={`w-32 p-2 border-r border-gray-200 text-center ${
-                      dateCol.isToday ? 'bg-blue-100 border-blue-300' :
-                      dateCol.isWeekend ? 'bg-red-50' : 'bg-white'
+                      dateCol.isToday ? 'bg-gradient-to-b from-blue-100 to-blue-50 border-2 border-blue-400' :
+                      dateCol.isWeekend ? 'bg-gradient-to-b from-red-50 to-pink-50' : 'bg-white'
                     }`}
                   >
                     <div className={`font-bold text-sm ${
-                      dateCol.isToday ? 'text-blue-700' :
-                      dateCol.isWeekend ? 'text-red-600' : 'text-gray-700'
+                      dateCol.isToday ? 'text-blue-800' :
+                      dateCol.isWeekend ? 'text-red-700' : 'text-gray-800'
                     }`}>
                       {dateCol.displayDate}
                     </div>
-                    <div className={`text-xs ${
+                    <div className={`text-xs font-medium ${
                       dateCol.isToday ? 'text-blue-600' :
-                      dateCol.isWeekend ? 'text-red-500' : 'text-gray-500'
+                      dateCol.isWeekend ? 'text-red-600' : 'text-gray-600'
                     }`}>
                       {dateCol.dayOfWeek}
                     </div>
@@ -313,14 +316,14 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
                             dateCol?.isWeekend ? 'bg-red-50/20' : ''
                           }`}
                         >
-                          <div className="flex flex-col space-y-0.5">
+                          <div className="flex flex-col space-y-1">
                           {/* 1부 */}
                           <button
                             onClick={() => handleCellClick(course.id, dateData.date, 1)}
-                            className={`text-xs rounded-sm px-1.5 py-1 border transition-all w-full ${
+                            className={`text-xs rounded-md px-2 py-1.5 border transition-all w-full font-semibold shadow-sm ${
                               dateData.timeSlot1 > 0 
-                                ? 'bg-blue-50 hover:bg-blue-100 hover:shadow-sm border-blue-200 text-blue-700 font-bold' 
-                                : 'bg-gray-50 text-gray-400 cursor-default border-gray-200'
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-blue-600 text-white hover:shadow-md' 
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
                             }`}
                             disabled={dateData.timeSlot1 === 0}
                           >
@@ -329,10 +332,10 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
                           {/* 2부 */}
                           <button
                             onClick={() => handleCellClick(course.id, dateData.date, 2)}
-                            className={`text-xs rounded-sm px-1.5 py-1 border transition-all w-full ${
+                            className={`text-xs rounded-md px-2 py-1.5 border transition-all w-full font-semibold shadow-sm ${
                               dateData.timeSlot2 > 0 
-                                ? 'bg-green-50 hover:bg-green-100 hover:shadow-sm border-green-200 text-green-700 font-bold' 
-                                : 'bg-gray-50 text-gray-400 cursor-default border-gray-200'
+                                ? 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 border-green-600 text-white hover:shadow-md' 
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
                             }`}
                             disabled={dateData.timeSlot2 === 0}
                           >
@@ -341,10 +344,10 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
                           {/* 3부 */}
                           <button
                             onClick={() => handleCellClick(course.id, dateData.date, 3)}
-                            className={`text-xs rounded-sm px-1.5 py-1 border transition-all w-full ${
+                            className={`text-xs rounded-md px-2 py-1.5 border transition-all w-full font-semibold shadow-sm ${
                               dateData.timeSlot3 > 0 
-                                ? 'bg-orange-50 hover:bg-orange-100 hover:shadow-sm border-orange-200 text-orange-700 font-bold' 
-                                : 'bg-gray-50 text-gray-400 cursor-default border-gray-200'
+                                ? 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 border-orange-600 text-white hover:shadow-md' 
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
                             }`}
                             disabled={dateData.timeSlot3 === 0}
                           >
@@ -363,25 +366,25 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
       </div>
 
       {/* 범례 및 상태 정보 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 text-xs text-gray-600">
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-blue-100 rounded border border-blue-200"></div>
-            <span>1부 (10시 이전)</span>
+      <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-white p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded shadow-sm"></div>
+            <span className="text-sm font-medium text-gray-700">1부 (10시 이전)</span>
           </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-green-100 rounded border border-green-200"></div>
-            <span>2부 (10시-15시)</span>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded shadow-sm"></div>
+            <span className="text-sm font-medium text-gray-700">2부 (10시-15시)</span>
           </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-orange-100 rounded border border-orange-200"></div>
-            <span>3부 (15시 이후)</span>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-gradient-to-r from-orange-500 to-amber-600 rounded shadow-sm"></div>
+            <span className="text-sm font-medium text-gray-700">3부 (15시 이후)</span>
           </div>
         </div>
         {isRefreshing && (
-          <div className="flex items-center space-x-2 text-xs text-gray-500">
-            <RefreshCw className="h-3 w-3 animate-spin" />
-            <span>업데이트 중...</span>
+          <div className="flex items-center space-x-2">
+            <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+            <span className="text-sm font-medium text-gray-600">업데이트 중...</span>
           </div>
         )}
       </div>

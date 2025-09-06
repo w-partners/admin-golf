@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SessionWrapper from '@/components/SessionWrapper';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
+import { BRANDING } from '@/constants/branding';
+import { ConditionalLayout } from '@/components/layout/ConditionalLayout';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "골프장 예약 관리 시스템",
-  description: "Golf Course Reservation Management System",
+  title: BRANDING.SYSTEM_NAME,
+  description: BRANDING.COMPANY_DESCRIPTION,
 };
 
 export default function RootLayout({
@@ -30,12 +32,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionWrapper>
-          <div className="min-h-screen bg-gray-50">
-            <GlobalHeader />
-            <main className="container mx-auto px-4 py-6">
-              {children}
-            </main>
-          </div>
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
         </SessionWrapper>
       </body>
     </html>

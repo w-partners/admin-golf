@@ -18,6 +18,9 @@ import { Bell, User, LogOut, Settings, TreePine, Menu } from 'lucide-react'
 import { QuickMenu } from './QuickMenu'
 import { useState } from 'react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { BRANDING } from '@/constants/branding'
+import { COMMON_TEXTS } from '@/constants/commonTexts'
+import { getAccountTypeLabel, getAccountTypeBadgeColor } from '@/constants/userTypes'
 
 export function GlobalHeader() {
   const { data: session, status } = useSession()
@@ -29,32 +32,6 @@ export function GlobalHeader() {
     router.push('/login')
   }
 
-  const getAccountTypeLabel = (accountType: string) => {
-    switch (accountType) {
-      case 'SUPER_ADMIN': return '최고관리자'
-      case 'ADMIN': return '관리자'
-      case 'TEAM_LEADER': return '팀장'
-      case 'INTERNAL_MANAGER': return '내부매니저'
-      case 'EXTERNAL_MANAGER': return '외부매니저'
-      case 'PARTNER': return '파트너'
-      case 'GOLF_COURSE': return '골프장'
-      case 'MEMBER': return '회원'
-      default: return accountType
-    }
-  }
-
-  const getAccountTypeBadgeColor = (accountType: string) => {
-    switch (accountType) {
-      case 'SUPER_ADMIN': return 'bg-red-100 text-red-800 border-red-200'
-      case 'ADMIN': return 'bg-purple-100 text-purple-800 border-purple-200'
-      case 'TEAM_LEADER': return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'INTERNAL_MANAGER': return 'bg-green-100 text-green-800 border-green-200'
-      case 'EXTERNAL_MANAGER': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'PARTNER': return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'GOLF_COURSE': return 'bg-indigo-100 text-indigo-800 border-indigo-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
 
   const getUserInitials = (name: string) => {
     const parts = name.split(' ')
@@ -70,9 +47,9 @@ export function GlobalHeader() {
         <div className="flex h-16 items-center justify-between">
           {/* 로고 및 회사명 */}
           <div className="flex items-center space-x-4">
-            {/* 모바일 메뉴 트리거 */}
+            {/* 메뉴 트리거 */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild className="lg:hidden">
+              <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-5 w-5" />
                 </Button>
@@ -94,8 +71,8 @@ export function GlobalHeader() {
                 <TreePine className="h-6 w-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900">골프장 예약 관리</h1>
-                <p className="text-xs text-gray-500">Golf Reservation System</p>
+                <h1 className="text-xl font-bold text-gray-900">{BRANDING.SYSTEM_NAME_SHORT}</h1>
+                <p className="text-xs text-gray-500">{BRANDING.SYSTEM_NAME_EN}</p>
               </div>
             </Link>
           </div>
@@ -142,36 +119,24 @@ export function GlobalHeader() {
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium">{session.user.name}</p>
                         <p className="text-xs text-gray-500">{session.user.phone}</p>
-                        <Badge 
-                          variant="outline" 
-                          className={`w-fit text-xs ${getAccountTypeBadgeColor(session.user.accountType)}`}
-                        >
-                          {getAccountTypeLabel(session.user.accountType)}
-                        </Badge>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push('/profile')}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>내 정보</span>
+                      <span>{COMMON_TEXTS.MENU_ITEMS.PROFILE}</span>
                     </DropdownMenuItem>
-                    {['TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(session.user.accountType) && (
-                      <DropdownMenuItem onClick={() => router.push('/team')}>
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>팀 관리</span>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>로그아웃</span>
+                      <span>{COMMON_TEXTS.ACTIONS.LOGOUT}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             ) : status === 'unauthenticated' ? (
               <Button onClick={() => router.push('/login')}>
-                로그인
+                {COMMON_TEXTS.ACTIONS.LOGIN}
               </Button>
             ) : (
               <div className="animate-pulse">
@@ -181,10 +146,6 @@ export function GlobalHeader() {
           </div>
         </div>
 
-        {/* 데스크톱 Quick Menu */}
-        <div className="hidden lg:block border-t">
-          <QuickMenu />
-        </div>
       </div>
     </header>
   )

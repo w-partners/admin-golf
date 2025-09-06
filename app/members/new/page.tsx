@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Save, UserPlus } from "lucide-react"
 import { toast } from "react-hot-toast"
+import { ACCOUNT_TYPE_LABELS, getAccountTypeLabel } from '@/constants/userTypes'
 
 const userSchema = z.object({
   name: z.string().min(2, "이름은 2자 이상이어야 합니다").max(50, "이름은 50자 이하여야 합니다"),
@@ -47,16 +48,6 @@ interface Team {
   }
 }
 
-const accountTypeLabels = {
-  SUPER_ADMIN: '최고관리자',
-  ADMIN: '관리자',
-  TEAM_LEADER: '팀장',
-  INTERNAL_MANAGER: '내부매니저',
-  EXTERNAL_MANAGER: '외부매니저',
-  PARTNER: '파트너',
-  GOLF_COURSE: '골프장',
-  MEMBER: '회원'
-}
 
 const accountTypeDescriptions = {
   SUPER_ADMIN: '모든 기능에 접근 가능한 최고 관리자',
@@ -252,7 +243,7 @@ export default function NewMemberPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.entries(accountTypeLabels).map(([value, label]) => (
+                          {Object.entries(ACCOUNT_TYPE_LABELS).map(([value, label]) => (
                             <SelectItem key={value} value={value}>
                               {label}
                             </SelectItem>
@@ -362,7 +353,7 @@ export default function NewMemberPage() {
             <h3 className="font-semibold text-blue-900 mb-3">계정 유형별 권한 안내</h3>
             <div className="text-sm text-blue-800 space-y-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div><strong>최고관리자:</strong> 모든 기능 + 골프장 등록</div>
+                <div><strong>{getAccountTypeLabel('SUPER_ADMIN')}:</strong> 모든 기능 + 골프장 등록</div>
                 <div><strong>관리자:</strong> 모든 기능 접근</div>
                 <div><strong>팀장:</strong> 팀 관리 + 팀원 예약 확정</div>
                 <div><strong>내부매니저:</strong> 티타임 등록/수정, 실적 등록</div>
