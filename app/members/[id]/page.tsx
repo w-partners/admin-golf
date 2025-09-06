@@ -20,7 +20,32 @@ import { ArrowLeft, Save, Users, Calendar, Trophy, Phone, Crown } from "lucide-r
 import { toast } from "react-hot-toast"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
-import { ACCOUNT_TYPE_LABELS, getAccountTypeLabel, getAccountTypeBadgeColor } from '@/constants/userTypes'
+const getAccountTypeLabel = (accountType: string) => {
+  switch(accountType) {
+    case 'SUPER_ADMIN': return '최고관리자'
+    case 'ADMIN': return '관리자'
+    case 'TEAM_LEADER': return '팀장'
+    case 'INTERNAL_MANAGER': return '내부매니저'
+    case 'EXTERNAL_MANAGER': return '외부매니저'
+    case 'PARTNER': return '파트너'
+    case 'GOLF_COURSE': return '골프장'
+    case 'MEMBER': return '멤버'
+    default: return '멤버'
+  }
+}
+
+const getAccountTypeBadgeColor = (accountType: string) => {
+  switch(accountType) {
+    case 'SUPER_ADMIN': return 'bg-red-100 text-red-800 border-red-200'
+    case 'ADMIN': return 'bg-orange-100 text-orange-800 border-orange-200'
+    case 'TEAM_LEADER': return 'bg-purple-100 text-purple-800 border-purple-200'
+    case 'INTERNAL_MANAGER': return 'bg-green-100 text-green-800 border-green-200'
+    case 'EXTERNAL_MANAGER': return 'bg-blue-100 text-blue-800 border-blue-200'
+    case 'PARTNER': return 'bg-indigo-100 text-indigo-800 border-indigo-200'
+    case 'GOLF_COURSE': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    default: return 'bg-gray-100 text-gray-800 border-gray-200'
+  }
+}
 
 const userUpdateSchema = z.object({
   name: z.string().min(2, "이름은 2자 이상이어야 합니다").max(50, "이름은 50자 이하여야 합니다"),

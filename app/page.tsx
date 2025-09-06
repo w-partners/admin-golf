@@ -2,22 +2,16 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { useEffect, Suspense } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { 
   Calendar, 
   MapPin, 
   BarChart3, 
-  Users, 
-  Plus,
-  TrendingUp,
-  Clock,
-  CheckCircle
+  Users
 } from 'lucide-react'
-import Link from 'next/link'
-import { BRANDING } from '@/constants/branding'
-import { getAccountTypeLabel } from '@/constants/userTypes'
+ 
+ 
 
 export default function Home() {
   const { data: session, status } = useSession()
@@ -53,7 +47,7 @@ export default function Home() {
               안녕하세요, {session.user.name}님!
             </h1>
             <p className="text-emerald-50 text-lg">
-              {BRANDING.WELCOME_MESSAGE}
+              골프장 예약 관리에 오신 것을 환영합니다.
             </p>
             <div className="mt-4 inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur rounded-lg border border-white/30">
               <span className="text-sm font-semibold">
@@ -152,7 +146,7 @@ export default function Home() {
                 시스템 준비 완료
               </div>
               <div className="text-emerald-700 text-sm leading-relaxed">
-                {BRANDING.SYSTEM_NAME}이 정상 운영 중입니다.
+                골프장 예약 관리 시스템이 정상 운영 중입니다.
               </div>
             </div>
           </CardContent>

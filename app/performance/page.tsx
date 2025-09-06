@@ -117,7 +117,7 @@ export default function PerformancePage() {
         description: '티타임이 완료 처리되었습니다.'
       });
       fetchCompletedTeeTimes();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: '오류',
         description: error.message,
@@ -158,7 +158,7 @@ export default function PerformancePage() {
         notes: ''
       });
       fetchCompletedTeeTimes();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: '오류',
         description: error.message,

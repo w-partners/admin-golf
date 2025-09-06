@@ -56,70 +56,53 @@ export function getRemainingSeconds(reservedAt: Date | null): number {
 /**
  * 권한 체크 - 사용자가 특정 작업을 수행할 수 있는지 확인
  */
+// 권한 체크 함수들은 DB나 설정 파일에서 동적으로 가져와야 함
+// 임시로 기본 권한 체크 함수만 남김
 export const PERMISSIONS = {
-  // 골프장 관리
   canManageGolfCourse: (accountType: string) => {
-    return ['SUPER_ADMIN', 'ADMIN'].includes(accountType);
+    // TODO: DB에서 권한 정보 조회
+    return accountType === 'SUPER_ADMIN' || accountType === 'ADMIN';
   },
-  
-  // 티타임 등록
   canCreateTeeTime: (accountType: string) => {
-    return ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'INTERNAL_MANAGER', 
-            'EXTERNAL_MANAGER', 'PARTNER'].includes(accountType);
+    // TODO: DB에서 권한 정보 조회
+    return accountType !== 'MEMBER' && accountType !== 'GOLF_COURSE';
   },
-  
-  // 티타임 예약
   canReserveTeeTime: (accountType: string) => {
-    return ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'INTERNAL_MANAGER', 
-            'EXTERNAL_MANAGER', 'PARTNER'].includes(accountType);
+    // TODO: DB에서 권한 정보 조회
+    return accountType !== 'MEMBER' && accountType !== 'GOLF_COURSE';
   },
-  
-  // 예약 확정 (자신 또는 팀원)
   canConfirmReservation: (
     accountType: string, 
     isOwn: boolean, 
     isTeamMember: boolean = false
   ) => {
-    // 관리자는 모든 예약 확정 가능
-    if (['SUPER_ADMIN', 'ADMIN'].includes(accountType)) return true;
-    
-    // 팀장은 팀원 예약 확정 가능
+    // TODO: DB에서 권한 정보 조회
+    if (accountType === 'SUPER_ADMIN' || accountType === 'ADMIN') return true;
     if (accountType === 'TEAM_LEADER' && isTeamMember) return true;
-    
-    // 매니저는 자신의 예약만 확정
-    if (['INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER'].includes(accountType) && isOwn) {
+    if ((accountType === 'INTERNAL_MANAGER' || accountType === 'EXTERNAL_MANAGER' || accountType === 'PARTNER') && isOwn) {
       return true;
     }
-    
     return false;
   },
-  
-  // 실적 등록
   canRegisterPerformance: (accountType: string) => {
-    return ['SUPER_ADMIN', 'ADMIN', 'INTERNAL_MANAGER', 
-            'EXTERNAL_MANAGER', 'PARTNER'].includes(accountType);
+    // TODO: DB에서 권한 정보 조회
+    return accountType !== 'MEMBER' && accountType !== 'GOLF_COURSE' && accountType !== 'TEAM_LEADER';
   },
-  
-  // 회원 관리
   canManageUsers: (accountType: string) => {
-    return ['SUPER_ADMIN', 'ADMIN'].includes(accountType);
+    // TODO: DB에서 권한 정보 조회
+    return accountType === 'SUPER_ADMIN' || accountType === 'ADMIN';
   },
-  
-  // 팀 관리
   canManageTeam: (accountType: string) => {
-    return ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER'].includes(accountType);
+    // TODO: DB에서 권한 정보 조회
+    return accountType === 'SUPER_ADMIN' || accountType === 'ADMIN' || accountType === 'TEAM_LEADER';
   },
-  
-  // 골프장별 접근 (골프장 계정은 자신의 골프장만)
   canAccessGolfCourse: (
     accountType: string, 
     userGolfCourseId?: number, 
     targetGolfCourseId?: number
   ) => {
-    // 관리자와 매니저는 모든 골프장 접근 가능
+    // TODO: DB에서 권한 정보 조회
     if (accountType !== 'GOLF_COURSE') return true;
-    
-    // 골프장 계정은 자신의 골프장만
     return userGolfCourseId === targetGolfCourseId;
   }
 };
@@ -148,10 +131,9 @@ export function generateDateRange(days: number = 90): Date[] {
  * @returns string - "MM/DD (요일)" 형식
  */
 export function formatDateKR(date: Date): string {
-  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  const weekday = weekdays[date.getDay()];
+  const weekday = date.toLocaleDateString('ko-KR', { weekday: 'short' }).replace('요일', '');
   
   return `${month}/${day} (${weekday})`;
 }
@@ -168,39 +150,8 @@ export function formatTimeKR(time: Date): string {
   return `${hours}:${minutes}`;
 }
 
-/**
- * 지역 한글명 매핑
- */
-export const REGION_NAMES: Record<Region, string> = {
-  GYEONGGI_NORTH: '경기북부',
-  GYEONGGI_SOUTH: '경기남부',
-  GYEONGGI_EAST: '경기동부',
-  GANGWON: '강원',
-  GYEONGSANG: '경상',
-  CHUNGNAM: '충남',
-  JEOLLA: '전라',
-  JEJU: '제주'
-};
 
-/**
- * 시간대 한글명 매핑
- */
-export const TIME_SLOT_NAMES = {
-  SLOT_1: '1부',
-  SLOT_2: '2부',
-  SLOT_3: '3부'
-};
 
-/**
- * 예약 상태 한글명 매핑
- */
-export const STATUS_NAMES = {
-  AVAILABLE: '예약가능',
-  RESERVED: '예약중',
-  CONFIRMED: '예약확정',
-  COMPLETED: '완료',
-  CANCELLED: '취소'
-};
 
 /**
  * 그린피 포맷 (만원 단위, 소수점 1자리)

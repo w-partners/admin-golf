@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 
 // GET /api/teams/[id] - 특정 팀 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await context.params
     const session = await auth()
     
     if (!session?.user) {
@@ -19,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const teamId = parseInt(params.id)
+    const teamId = parseInt(resolvedParams.id)
     
     const team = await prisma.team.findUnique({
       where: { id: teamId },
@@ -76,9 +77,10 @@ export async function GET(
 // PUT /api/teams/[id] - 팀 정보 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await context.params
     const session = await auth()
     
     if (!session?.user) {
@@ -90,7 +92,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const teamId = parseInt(params.id)
+    const teamId = parseInt(resolvedParams.id)
     const body = await request.json()
     const { name, leaderId } = body
 
@@ -103,7 +105,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Team not found' }, { status: 404 })
     }
 
-    const updateData: any = {}
+    const updateData: unknown = {}
     
     if (name) {
       updateData.name = name
@@ -205,9 +207,10 @@ export async function PUT(
 // DELETE /api/teams/[id] - 팀 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const resolvedParams = await context.params
     const session = await auth()
     
     if (!session?.user) {
@@ -219,7 +222,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const teamId = parseInt(params.id)
+    const teamId = parseInt(resolvedParams.id)
 
     // 팀 존재 확인
     const existingTeam = await prisma.team.findUnique({

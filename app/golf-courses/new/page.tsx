@@ -64,7 +64,7 @@ export default function NewGolfCoursePage() {
         description: '골프장이 성공적으로 등록되었습니다.'
       });
       router.push('/golf-courses');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: '오류',
         description: error.message,
@@ -76,14 +76,14 @@ export default function NewGolfCoursePage() {
   };
 
   const regionOptions = [
-    { value: 'GYEONGGI_NORTH', label: '경기북부' },
-    { value: 'GYEONGGI_SOUTH', label: '경기남부' },
-    { value: 'GYEONGGI_EAST', label: '경기동부' },
     { value: 'GANGWON', label: '강원' },
     { value: 'GYEONGSANG', label: '경상' },
-    { value: 'CHUNGNAM', label: '충남' },
-    { value: 'JEONLA', label: '전라' },
-    { value: 'JEJU', label: '제주' }
+    { value: 'CHUNGCHEONG', label: '충청' },
+    { value: 'JEOLLA', label: '전라' },
+    { value: 'JEJU', label: '제주' },
+    { value: 'GYEONGBUK', label: '경북' },
+    { value: 'GYEONGNAM', label: '경남' },
+    { value: 'GYEONGDONG', label: '경동' }
   ];
 
   const statusOptions = [

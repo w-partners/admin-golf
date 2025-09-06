@@ -15,7 +15,21 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Save, UserPlus } from "lucide-react"
 import { toast } from "react-hot-toast"
-import { ACCOUNT_TYPE_LABELS, getAccountTypeLabel } from '@/constants/userTypes'
+ 
+
+const getAccountTypeLabel = (accountType: string) => {
+  switch(accountType) {
+    case 'SUPER_ADMIN': return '최고관리자'
+    case 'ADMIN': return '관리자'
+    case 'TEAM_LEADER': return '팀장'
+    case 'INTERNAL_MANAGER': return '내부매니저'
+    case 'EXTERNAL_MANAGER': return '외부매니저'
+    case 'PARTNER': return '파트너'
+    case 'GOLF_COURSE': return '골프장'
+    case 'MEMBER': return '멤버'
+    default: return '멤버'
+  }
+}
 
 const userSchema = z.object({
   name: z.string().min(2, "이름은 2자 이상이어야 합니다").max(50, "이름은 50자 이하여야 합니다"),
@@ -80,6 +94,11 @@ export default function NewMemberPage() {
 
   const watchedAccountType = form.watch("accountType")
 
+  useEffect(() => {
+    // 팀 정보 로드 (팀원을 추가할 때 팀장을 선택하기 위해)
+    fetchTeams()
+  }, [])
+
   // 권한 체크
   if (status === "loading") {
     return (
@@ -98,11 +117,6 @@ export default function NewMemberPage() {
     router.push("/unauthorized")
     return null
   }
-
-  useEffect(() => {
-    // 팀 정보 로드 (팀원을 추가할 때 팀장을 선택하기 위해)
-    fetchTeams()
-  }, [])
 
   const fetchTeams = async () => {
     try {
@@ -243,7 +257,16 @@ export default function NewMemberPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.entries(ACCOUNT_TYPE_LABELS).map(([value, label]) => (
+                          {Object.entries({
+                            'SUPER_ADMIN': '최고관리자',
+                            'ADMIN': '관리자',
+                            'TEAM_LEADER': '팀장',
+                            'INTERNAL_MANAGER': '내부매니저',
+                            'EXTERNAL_MANAGER': '외부매니저',
+                            'PARTNER': '파트너',
+                            'GOLF_COURSE': '골프장',
+                            'MEMBER': '멤버'
+                          }).map(([value, label]) => (
                             <SelectItem key={value} value={value}>
                               {label}
                             </SelectItem>

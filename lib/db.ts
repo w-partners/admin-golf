@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
 export async function findGolfCoursesByRegion(region: string) {
   return await prisma.golfCourse.findMany({
     where: { region },
-    orderBy: { orderIndex: 'asc' },
+    orderBy: { sequence: 'asc' },
     include: {
       teeTimes: {
         where: {
@@ -41,9 +41,9 @@ export async function getTeeTimesByDateRange(startDate: Date, endDate: Date) {
     },
     include: {
       golfCourse: true,
-      reservedBy: true,
       confirmedBy: true,
-      relatedTeeTimes: {
+      connected: true,
+      connections: {
         include: {
           golfCourse: true
         }
@@ -58,36 +58,38 @@ export async function getTeeTimesByDateRange(startDate: Date, endDate: Date) {
 
 export async function createTeeTime(data: any) {
   // Auto-classification logic
-  const hour = parseInt(data.time.split(':')[0]);
-  let timePart: 'PART_1' | 'PART_2' | 'PART_3';
+  const time = new Date(data.time);
+  const hour = time.getHours();
+  let timeSlot: string;
   
   if (hour < 10) {
-    timePart = 'PART_1';
+    timeSlot = 'MORNING';
   } else if (hour < 15) {
-    timePart = 'PART_2';
+    timeSlot = 'AFTERNOON';
   } else {
-    timePart = 'PART_3';
+    timeSlot = 'EVENING';
   }
   
   const bookingType = data.players === 4 ? 'BOOKING' : 'JOIN';
   
   // Get golf course region
   const golfCourse = await prisma.golfCourse.findUnique({
-    where: { id: data.golfCourseId },
+    where: { id: parseInt(data.golfCourseId) },
     select: { region: true }
   });
   
   return await prisma.teeTime.create({
     data: {
       ...data,
-      timePart,
+      golfCourseId: parseInt(data.golfCourseId),
+      timeSlot,
       bookingType,
       region: golfCourse?.region || 'JEJU',
       status: 'AVAILABLE'
     },
     include: {
       golfCourse: true,
-      reservedBy: true
+      manager: true
     }
   });
 }
@@ -97,7 +99,7 @@ export async function getAllGolfCourses() {
   return await prisma.golfCourse.findMany({
     orderBy: [
       { region: 'asc' },
-      { orderIndex: 'asc' },
+      { sequence: 'asc' },
       { name: 'asc' }
     ]
   });
@@ -105,7 +107,7 @@ export async function getAllGolfCourses() {
 
 export async function getGolfCourseById(id: string) {
   return await prisma.golfCourse.findUnique({
-    where: { id },
+    where: { id: parseInt(id) },
     include: {
       teeTimes: {
         where: {
@@ -137,9 +139,9 @@ export async function getUsersByRole(role: string) {
 
 // Performance Helper Functions
 export async function getCompletedTeeTimes(managerId?: string) {
-  const where = {
-    status: 'COMPLETED' as const,
-    ...(managerId && { confirmedById: managerId })
+  const where: any = {
+    status: 'COMPLETED',
+    ...(managerId && { confirmedById: parseInt(managerId) })
   };
   
   return await prisma.teeTime.findMany({
@@ -147,22 +149,20 @@ export async function getCompletedTeeTimes(managerId?: string) {
     include: {
       golfCourse: true,
       confirmedBy: true,
-      reservedBy: true
+      manager: true
     },
-    orderBy: { completedAt: 'desc' }
+    orderBy: { confirmedAt: 'desc' }
   });
 }
 
 export async function updateTeeTimePerformance(id: string, performanceData: any) {
   return await prisma.teeTime.update({
-    where: { id },
+    where: { id: parseInt(id) },
     data: {
-      performanceRegistered: true,
-      commissionType: performanceData.commissionType,
-      commissionAmount: performanceData.commissionAmount,
-      settlementMethod: performanceData.settlementMethod,
-      notes: performanceData.notes,
-      completedAt: new Date()
+      performanceReg: true,
+      commission: parseFloat(performanceData.commission),
+      settlement: performanceData.settlement,
+      notes: performanceData.notes
     }
   });
 }

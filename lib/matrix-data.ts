@@ -1,4 +1,5 @@
-import { PrismaClient, TeeTimeType, BookingType, TimeSlot, TeeTimeStatus } from '@prisma/client';
+import { PrismaClient, TeeTime } from '@prisma/client';
+import { TeeTimeType, BookingType, TimeSlot, TeeTimeStatus } from './types/enums';
 import { generateDateRange } from './business-logic';
 
 const prisma = new PrismaClient();
@@ -61,7 +62,7 @@ export async function getMatrixData(
           lte: endDate
         },
         status: {
-          in: [TeeTimeStatus.AVAILABLE, TeeTimeStatus.RESERVED, TeeTimeStatus.CONFIRMED]
+          in: ['AVAILABLE', 'RESERVED', 'CONFIRMED']
         }
       },
       select: {
@@ -103,13 +104,13 @@ export async function getMatrixData(
         
         if (cell) {
           switch (tt.timeSlot) {
-            case TimeSlot.SLOT_1:
+            case 'MORNING':
               cell.slot1Count++;
               break;
-            case TimeSlot.SLOT_2:
+            case 'AFTERNOON':
               cell.slot2Count++;
               break;
-            case TimeSlot.SLOT_3:
+            case 'EVENING':
               cell.slot3Count++;
               break;
           }
@@ -207,7 +208,7 @@ export async function getMatrixSummary(
         gte: today
       },
       status: {
-        in: [TeeTimeStatus.AVAILABLE, TeeTimeStatus.RESERVED, TeeTimeStatus.CONFIRMED]
+        in: ['AVAILABLE', 'RESERVED', 'CONFIRMED']
       }
     };
 
@@ -219,24 +220,24 @@ export async function getMatrixSummary(
 
     // 시간대별 수량
     const slot1 = await prisma.teeTime.count({
-      where: { ...where, timeSlot: TimeSlot.SLOT_1 }
+      where: { ...where, timeSlot: 'MORNING' }
     });
     const slot2 = await prisma.teeTime.count({
-      where: { ...where, timeSlot: TimeSlot.SLOT_2 }
+      where: { ...where, timeSlot: 'AFTERNOON' }
     });
     const slot3 = await prisma.teeTime.count({
-      where: { ...where, timeSlot: TimeSlot.SLOT_3 }
+      where: { ...where, timeSlot: 'EVENING' }
     });
 
     // 상태별 수량
     const available = await prisma.teeTime.count({
-      where: { ...where, status: TeeTimeStatus.AVAILABLE }
+      where: { ...where, status: 'AVAILABLE' }
     });
     const reserved = await prisma.teeTime.count({
-      where: { ...where, status: TeeTimeStatus.RESERVED }
+      where: { ...where, status: 'RESERVED' }
     });
     const confirmed = await prisma.teeTime.count({
-      where: { ...where, status: TeeTimeStatus.CONFIRMED }
+      where: { ...where, status: 'CONFIRMED' }
     });
 
     return {
@@ -272,15 +273,5 @@ function getDateKey(date: Date): string {
  * 지역 한글명 반환
  */
 function getRegionName(region: string): string {
-  const regionNames: Record<string, string> = {
-    GYEONGGI_NORTH: '경기북부',
-    GYEONGGI_SOUTH: '경기남부',
-    GYEONGGI_EAST: '경기동부',
-    GANGWON: '강원',
-    GYEONGSANG: '경상',
-    CHUNGNAM: '충남',
-    JEOLLA: '전라',
-    JEJU: '제주'
-  };
-  return regionNames[region] || region;
+  return region;
 }

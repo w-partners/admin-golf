@@ -94,7 +94,7 @@ export default function GolfCourseDetailPage({ params }: { params: { id: string 
         description: '골프장 정보가 수정되었습니다.'
       });
       fetchGolfCourse();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: '오류',
         description: error.message,
@@ -106,14 +106,14 @@ export default function GolfCourseDetailPage({ params }: { params: { id: string 
   };
 
   const regionOptions = [
-    { value: 'GYEONGGI_NORTH', label: '경기북부' },
-    { value: 'GYEONGGI_SOUTH', label: '경기남부' },
-    { value: 'GYEONGGI_EAST', label: '경기동부' },
-    { value: 'GANGWON', label: '강원' },
-    { value: 'GYEONGSANG', label: '경상' },
-    { value: 'CHUNGNAM', label: '충남' },
-    { value: 'JEONLA', label: '전라' },
-    { value: 'JEJU', label: '제주' }
+    { value: '강원', label: '강원' },
+    { value: '경상', label: '경상' },
+    { value: '충청', label: '충청' },
+    { value: '전라', label: '전라' },
+    { value: '제주', label: '제주' },
+    { value: '경북', label: '경북' },
+    { value: '경남', label: '경남' },
+    { value: '경동', label: '경동' }
   ];
 
   const statusOptions = [
@@ -280,7 +280,7 @@ export default function GolfCourseDetailPage({ params }: { params: { id: string 
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {golfCourse?.teeTimes?.map((teeTime: any) => (
+                    {golfCourse?.teeTimes?.map((teeTime: unknown) => (
                       <div key={teeTime.id} className="border rounded-lg p-4">
                         <div className="flex justify-between items-start">
                           <div className="space-y-1">

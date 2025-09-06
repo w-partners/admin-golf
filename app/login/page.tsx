@@ -8,8 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCircle, Phone, Lock, Sparkles, Shield, Users, ArrowRight } from 'lucide-react'
-import { getAccountTypeLabel } from '@/constants/userTypes'
-import { BRANDING } from '@/constants/branding'
+ 
 
 export default function LoginPage() {
   const router = useRouter()
@@ -94,9 +93,9 @@ export default function LoginPage() {
             <span className="text-4xl">⛳</span>
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-2">
-            {BRANDING.SYSTEM_NAME_SHORT}
+            골프 예약
           </h1>
-          <p className="text-gray-600 font-medium">{BRANDING.SYSTEM_NAME_EN}</p>
+          <p className="text-gray-600 font-medium">Golf Reservation System</p>
         </div>
 
         <Card className="backdrop-blur-sm bg-white/95 shadow-2xl border-0">
@@ -188,7 +187,7 @@ export default function LoginPage() {
                 >
                   <div className="flex items-center">
                     <Shield className="h-4 w-4 text-red-500 mr-1.5" />
-                    <span className="text-xs font-semibold text-gray-700">{getAccountTypeLabel('SUPER_ADMIN')}</span>
+                    <span className="text-xs font-semibold text-gray-700">최고관리자</span>
                   </div>
                   <ArrowRight className="h-3 w-3 text-gray-400 group-hover:text-blue-600 transition-colors" />
                 </button>

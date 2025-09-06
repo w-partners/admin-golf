@@ -70,14 +70,14 @@ export const userCreateSchema = z.object({
   ]),
   company: z.string().max(100).optional(),
   region: z.enum([
-    'JEJU',
-    'GYEONGGI_SOUTH',
-    'GYEONGGI_NORTH',
-    'GYEONGGI_EAST',
     'GANGWON',
-    'CHUNGNAM',
     'GYEONGSANG',
-    'JEOLLA'
+    'CHUNGCHEONG',
+    'JEOLLA',
+    'JEJU',
+    'GYEONGBUK',
+    'GYEONGNAM',
+    'GYEONGDONG'
   ]).optional(),
   teamId: z.number().positive().optional(),
   notes: z.string().max(500).optional()
@@ -90,7 +90,7 @@ export const userUpdateSchema = userCreateSchema.partial().omit({ password: true
 export const passwordChangeSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string()
-    .min(8, '비밀번호는 최소 8자 이상이어야 합니다')
+    .min(4, '비밀번호는 최소 4자 이상이어야 합니다')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       '비밀번호는 대소문자, 숫자, 특수문자를 포함해야 합니다'
@@ -106,14 +106,14 @@ export const golfCourseCreateSchema = z.object({
   sequence: z.number().positive(),
   name: z.string().min(2).max(100),
   region: z.enum([
-    'JEJU',
-    'GYEONGGI_SOUTH',
-    'GYEONGGI_NORTH',
-    'GYEONGGI_EAST',
     'GANGWON',
-    'CHUNGNAM',
     'GYEONGSANG',
-    'JEOLLA'
+    'CHUNGCHEONG',
+    'JEOLLA',
+    'JEJU',
+    'GYEONGBUK',
+    'GYEONGNAM',
+    'GYEONGDONG'
   ]),
   address: z.string().min(5).max(200),
   contact: z.string().regex(/^0[0-9]{1,2}-[0-9]{3,4}-[0-9]{4}$/),

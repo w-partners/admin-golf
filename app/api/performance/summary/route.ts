@@ -1,7 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { PerformanceSummaryParamsSchema, validateRequest, isManager } from '@/lib/api/validation'
+
+// Helper functions
+function isManager(accountType: string): boolean {
+  const managerTypes = ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER']
+  return managerTypes.includes(accountType)
+}
+
+function validateRequest(schema: any, data: any) {
+  // Simple validation for required fields
+  const { startDate, endDate, managerId, teamId, golfCourseId } = data
+  
+  if (!startDate || !endDate) {
+    throw {
+      code: 'VALIDATION_ERROR',
+      message: 'startDate and endDate are required'
+    }
+  }
+  
+  return { startDate, endDate, managerId, teamId, golfCourseId }
+}
 
 // GET: 실적 요약 조회
 export async function GET(request: NextRequest) {
@@ -24,10 +43,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams.entries())
-    const validatedParams = validateRequest(PerformanceSummaryParamsSchema, params)
+    const validatedParams = validateRequest(null, params)
 
     // 필터 조건 구성
-    const whereCondition: any = {
+    const whereCondition: unknown = {
       completedAt: {
         gte: new Date(validatedParams.startDate),
         lte: new Date(`${validatedParams.endDate}T23:59:59.999Z`),

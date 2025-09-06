@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // 날짜 생성 함수
 function generateDateColumns(days: number = 90) {
@@ -13,7 +11,7 @@ function generateDateColumns(days: number = 90) {
     date.setDate(today.getDate() + i)
     
     const isToday = i === 0
-    const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
+    const dayOfWeek = date.toLocaleDateString('ko-KR', { weekday: 'short' })
     const isWeekend = date.getDay() === 0 || date.getDay() === 6
     
     columns.push({
@@ -78,12 +76,12 @@ export async function GET(request: NextRequest) {
     // 데이터베이스에서 실제 존재하는 지역만 가져오기 (엑셀시트처럼 동적으로)
     const existingRegions = [...new Set(golfCourses.map(gc => gc.region))].sort()
     
-    // 지역별 매트릭스 데이터 생성
+    // 지역별 매트릭스 데이터 생성 (한글 지역명 사용)
     const matrixData = existingRegions.map(region => {
       const regionalCourses = golfCourses.filter(gc => gc.region === region)
       
       return {
-        region,
+        region: region, // 한글 지역명 직접 사용
         golfCourses: regionalCourses.map(course => ({
           id: course.id,
           name: course.name,
@@ -132,7 +130,5 @@ export async function GET(request: NextRequest) {
       { error: '매트릭스 데이터를 불러오는데 실패했습니다' },
       { status: 500 }
     )
-  } finally {
-    await prisma.$disconnect()
   }
 }

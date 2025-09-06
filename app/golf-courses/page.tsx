@@ -82,7 +82,7 @@ export default function GolfCoursesPage() {
         description: '골프장이 삭제되었습니다.'
       });
       fetchGolfCourses();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: '오류',
         description: error.message,
@@ -93,14 +93,14 @@ export default function GolfCoursesPage() {
 
   const regionNames: Record<string, string> = {
     'ALL': '전체',
-    'GYEONGGI_NORTH': '경기북부',
-    'GYEONGGI_SOUTH': '경기남부',
-    'GYEONGGI_EAST': '경기동부',
-    'GANGWON': '강원',
-    'GYEONGSANG': '경상',
-    'CHUNGNAM': '충남',
-    'JEONLA': '전라',
-    'JEJU': '제주'
+    '강원': '강원',
+    '경상': '경상',
+    '충청': '충청',
+    '전라': '전라',
+    '제주': '제주',
+    '경북': '경북',
+    '경남': '경남',
+    '경동': '경동'
   };
 
   const statusColors: Record<string, string> = {

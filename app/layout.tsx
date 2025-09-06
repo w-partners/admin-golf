@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import SessionWrapper from '@/components/SessionWrapper';
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
-import { BRANDING } from '@/constants/branding';
 import { ConditionalLayout } from '@/components/layout/ConditionalLayout';
 import "./globals.css";
 
@@ -17,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: BRANDING.SYSTEM_NAME,
-  description: BRANDING.COMPANY_DESCRIPTION,
+  title: "골프장 예약 관리",
+  description: "골프장 예약 관리 시스템",
 };
 
 export default function RootLayout({

@@ -18,14 +18,39 @@ import { Bell, User, LogOut, Settings, TreePine, Menu } from 'lucide-react'
 import { QuickMenu } from './QuickMenu'
 import { useState } from 'react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { BRANDING } from '@/constants/branding'
-import { COMMON_TEXTS } from '@/constants/commonTexts'
-import { getAccountTypeLabel, getAccountTypeBadgeColor } from '@/constants/userTypes'
+ 
 
 export function GlobalHeader() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const getAccountTypeLabel = (accountType: string) => {
+    switch(accountType) {
+      case 'SUPER_ADMIN': return '최고관리자'
+      case 'ADMIN': return '관리자'
+      case 'TEAM_LEADER': return '팀장'
+      case 'INTERNAL_MANAGER': return '내부매니저'
+      case 'EXTERNAL_MANAGER': return '외부매니저'
+      case 'PARTNER': return '파트너'
+      case 'GOLF_COURSE': return '골프장'
+      case 'MEMBER': return '멤버'
+      default: return '멤버'
+    }
+  }
+
+  const getAccountTypeBadgeColor = (accountType: string) => {
+    switch(accountType) {
+      case 'SUPER_ADMIN': return 'border-red-300 bg-red-50 text-red-700'
+      case 'ADMIN': return 'border-orange-300 bg-orange-50 text-orange-700'
+      case 'TEAM_LEADER': return 'border-purple-300 bg-purple-50 text-purple-700'
+      case 'INTERNAL_MANAGER': return 'border-green-300 bg-green-50 text-green-700'
+      case 'EXTERNAL_MANAGER': return 'border-blue-300 bg-blue-50 text-blue-700'
+      case 'PARTNER': return 'border-indigo-300 bg-indigo-50 text-indigo-700'
+      case 'GOLF_COURSE': return 'border-yellow-300 bg-yellow-50 text-yellow-700'
+      default: return 'border-gray-300 bg-gray-50 text-gray-700'
+    }
+  }
 
   const handleSignOut = async () => {
     await signOut({ redirect: false })
@@ -71,8 +96,8 @@ export function GlobalHeader() {
                 <TreePine className="h-6 w-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900">{BRANDING.SYSTEM_NAME_SHORT}</h1>
-                <p className="text-xs text-gray-500">{BRANDING.SYSTEM_NAME_EN}</p>
+                <h1 className="text-xl font-bold text-gray-900">골프 예약</h1>
+                <p className="text-xs text-gray-500">Golf Reservation System</p>
               </div>
             </Link>
           </div>
@@ -124,19 +149,19 @@ export function GlobalHeader() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push('/profile')}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>{COMMON_TEXTS.MENU_ITEMS.PROFILE}</span>
+                      <span>프로필</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>{COMMON_TEXTS.ACTIONS.LOGOUT}</span>
+                      <span>로그아웃</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             ) : status === 'unauthenticated' ? (
               <Button onClick={() => router.push('/login')}>
-                {COMMON_TEXTS.ACTIONS.LOGIN}
+                로그인
               </Button>
             ) : (
               <div className="animate-pulse">

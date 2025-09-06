@@ -1,7 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { PerformanceStatsParamsSchema, validateRequest, isManager } from '@/lib/api/validation'
+
+// Helper functions
+function isManager(accountType: string): boolean {
+  const managerTypes = ['SUPER_ADMIN', 'ADMIN', 'TEAM_LEADER', 'INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER']
+  return managerTypes.includes(accountType)
+}
+
+function validateRequest(schema: any, data: any) {
+  // Simple validation for required fields
+  const { period = 'monthly', groupBy, startDate, endDate } = data
+  
+  if (!startDate || !endDate) {
+    throw {
+      code: 'VALIDATION_ERROR',
+      message: 'startDate and endDate are required'
+    }
+  }
+  
+  const validPeriods = ['daily', 'weekly', 'monthly', 'yearly']
+  const validGroupBy = ['manager', 'team', 'golfCourse', 'region']
+  
+  if (!validPeriods.includes(period)) {
+    throw {
+      code: 'VALIDATION_ERROR', 
+      message: 'Invalid period'
+    }
+  }
+  
+  if (groupBy && !validGroupBy.includes(groupBy)) {
+    throw {
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid groupBy'
+    }
+  }
+  
+  return { period, groupBy, startDate, endDate }
+}
 
 // GET: 실적 통계 조회
 export async function GET(request: NextRequest) {
@@ -24,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams.entries())
-    const validatedParams = validateRequest(PerformanceStatsParamsSchema, params)
+    const validatedParams = validateRequest(null, params)
 
     // 기간별 필터 조건
     const whereCondition = {

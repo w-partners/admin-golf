@@ -187,7 +187,7 @@ export default function DemoPage() {
               
               {/* 데이터 행들 */}
               {matrixData.map(regionData =>
-                regionData.golfCourses.map((course: any, courseIndex: number) => (
+                regionData.golfCourses.map((course: unknown, courseIndex: number) => (
                   <div key={course.id} className="flex border-b border-gray-200 hover:bg-blue-50 transition-colors">
                     <div className="w-20 px-2 py-3 border-r border-gray-200 flex items-center justify-center">
                       {courseIndex === 0 && (
@@ -235,9 +235,9 @@ export default function DemoPage() {
                 
                 {/* 데이터 행들 */}
                 {matrixData.map(regionData =>
-                  regionData.golfCourses.map((course: any) => (
+                  regionData.golfCourses.map((course: unknown) => (
                     <div key={course.id} className="flex border-b border-gray-200 hover:bg-gray-50">
-                      {course.dates.map((dateData: any, dateIndex: number) => {
+                      {course.dates.map((dateData: unknown, dateIndex: number) => {
                         const dateCol = dateColumns[dateIndex]
                         return (
                           <div 

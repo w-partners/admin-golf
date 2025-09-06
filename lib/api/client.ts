@@ -6,7 +6,7 @@ export class ApiError extends Error {
     public code: string,
     message: string,
     public status: number,
-    public details?: any
+    public details?: unknown
   ) {
     super(message)
     this.name = 'ApiError'
@@ -49,7 +49,7 @@ export class ApiClient {
     method: string,
     path: string,
     options?: {
-      body?: any
+      body?: unknown
       params?: Record<string, any>
       headers?: Record<string, string>
     }
@@ -105,12 +105,12 @@ export class ApiClient {
   }
 
   // POST 요청
-  post<T>(path: string, body?: any): Promise<T> {
+  post<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>('POST', path, { body })
   }
 
   // PUT 요청
-  put<T>(path: string, body?: any): Promise<T> {
+  put<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>('PUT', path, { body })
   }
 
@@ -120,7 +120,7 @@ export class ApiClient {
   }
 
   // PATCH 요청
-  patch<T>(path: string, body?: any): Promise<T> {
+  patch<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>('PATCH', path, { body })
   }
 }

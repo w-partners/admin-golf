@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { isReservationExpired } from '@/lib/api/validation'
+
+// Helper function
+function isReservationExpired(reservedAt: string | Date): boolean {
+  if (!reservedAt) return false
+  const expiredTime = new Date(reservedAt).getTime() + (10 * 60 * 1000) // 10분
+  return Date.now() > expiredTime
+}
 
 // GET: 예약 타이머 상태 조회
 export async function GET(

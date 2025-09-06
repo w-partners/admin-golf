@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 
 // GET /api/users/[id] - 특정 사용자 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const resolvedParams = await params
+    const session = await auth()
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const userId = parseInt(params.id)
+    const userId = parseInt(resolvedParams.id)
     
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -85,10 +86,11 @@ export async function GET(
 // PUT /api/users/[id] - 사용자 정보 수정
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const resolvedParams = await params
+    const session = await auth()
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -99,7 +101,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const userId = parseInt(params.id)
+    const userId = parseInt(resolvedParams.id)
     const body = await request.json()
     const { name, phone, accountType, isActive, teamLeaderId } = body
 
@@ -126,7 +128,7 @@ export async function PUT(
       }
     }
 
-    const updateData: any = {
+    const updateData: unknown = {
       name,
       phone,
       accountType,
@@ -233,10 +235,11 @@ export async function PUT(
 // PATCH /api/users/[id] - 부분 업데이트 (상태 변경 등)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const resolvedParams = await params
+    const session = await auth()
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -247,7 +250,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const userId = parseInt(params.id)
+    const userId = parseInt(resolvedParams.id)
     const body = await request.json()
 
     const updatedUser = await prisma.user.update({
@@ -276,10 +279,11 @@ export async function PATCH(
 // DELETE /api/users/[id] - 사용자 삭제
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const resolvedParams = await params
+    const session = await auth()
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -290,7 +294,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const userId = parseInt(params.id)
+    const userId = parseInt(resolvedParams.id)
 
     // 자기 자신 삭제 방지
     if (session.user.id === userId.toString()) {

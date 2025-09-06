@@ -1,9 +1,9 @@
 import NextAuth from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { AccountType } from '@prisma/client'
+import { AccountType } from '@/lib/types/enums'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -81,6 +81,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id
+        token.phone = user.phone
+        token.name = user.name
         token.accountType = user.accountType
         token.isActive = user.isActive
         token.teamId = user.teamId
@@ -90,7 +93,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub!
+        session.user.id = token.id as string
+        session.user.phone = token.phone as string
+        session.user.name = token.name as string
         session.user.accountType = token.accountType as AccountType
         session.user.isActive = token.isActive as boolean
         session.user.teamId = token.teamId as number
@@ -102,31 +107,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: '/login',
     error: '/login'
-  },
-  session: {
-    strategy: 'jwt'
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.phone = user.phone
-        token.name = user.name
-        token.accountType = user.accountType
-        token.teamId = user.teamId
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string
-        session.user.phone = token.phone as string
-        session.user.name = token.name as string
-        session.user.accountType = token.accountType as string
-        session.user.teamId = token.teamId as string | null
-      }
-      return session
-    }
   }
 })
 

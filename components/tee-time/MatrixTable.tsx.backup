@@ -74,7 +74,7 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
     
     try {
       const response = await fetch(
-        `/api/public/matrix?type=${teeTimeType}&booking=${bookingType}&days=90`
+        `/api/tee-times/matrix?type=${teeTimeType}&booking=${bookingType}&days=90`
       )
       
       if (!response.ok) {
@@ -242,18 +242,18 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
       <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xl">
         <div className="flex">
           {/* 좌측 고정 영역 - 지역/골프장 */}
-          <div className="flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 border-r-2 border-gray-300 sticky left-0 z-10" style={{width: '12rem'}}>
+          <div className="flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 border-r-2 border-gray-300 sticky left-0 z-10">
             {/* 헤더 */}
             <div className="flex border-b-2 border-gray-300 bg-gradient-to-r from-emerald-600 to-green-600">
-              <div className="w-20 p-3 border-r border-emerald-700/30 font-bold text-center text-sm text-white">지역</div>
-              <div className="w-28 p-3 font-bold text-center text-sm text-white">골프장</div>
+              <div className="w-24 p-3 border-r border-emerald-700/30 font-bold text-center text-sm text-white">지역</div>
+              <div className="w-32 p-3 font-bold text-center text-sm text-white">골프장</div>
             </div>
             
             {/* 데이터 행들 */}
             {matrixData.map(regionData => 
               regionData.golfCourses.map((course, courseIndex) => (
                 <div key={course.id} className="flex border-b border-gray-200 hover:bg-emerald-50/50 transition-all duration-200">
-                  <div className="w-20 p-3 border-r border-gray-200 flex items-center justify-center bg-white">
+                  <div className="w-24 p-3 border-r border-gray-200 flex items-center justify-center bg-white">
                     {courseIndex === 0 && (
                       <div className="flex items-center space-x-1">
                         <MapPin className="h-4 w-4 text-emerald-600" />
@@ -261,7 +261,7 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
                       </div>
                     )}
                   </div>
-                  <div className="w-28 p-3 flex items-center text-sm font-semibold text-gray-900 bg-white">
+                  <div className="w-32 p-3 flex items-center text-sm font-semibold text-gray-900 bg-white">
                     {course.name}
                   </div>
                 </div>
@@ -281,7 +281,7 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
                 {dateColumns.map(dateCol => (
                   <div 
                     key={dateCol.date}
-                    className={`w-36 p-2 border-r border-gray-200 text-center ${
+                    className={`w-32 p-2 border-r border-gray-200 text-center ${
                       dateCol.isToday ? 'bg-gradient-to-b from-blue-100 to-blue-50 border-2 border-blue-400' :
                       dateCol.isWeekend ? 'bg-gradient-to-b from-red-50 to-pink-50' : 'bg-white'
                     }`}
@@ -311,7 +311,7 @@ export function MatrixTable({ teeTimeType, bookingType, title }: MatrixTableProp
                       return (
                         <div 
                           key={dateData.date} 
-                          className={`w-36 p-1.5 border-r border-gray-200 ${
+                          className={`w-32 p-1.5 border-r border-gray-200 ${
                             dateCol?.isToday ? 'bg-blue-50/30' :
                             dateCol?.isWeekend ? 'bg-red-50/20' : ''
                           }`}

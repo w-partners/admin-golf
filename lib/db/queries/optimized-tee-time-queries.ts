@@ -220,7 +220,7 @@ export const getDailyStatistics = async (date: Date) => {
  * React cache + Redis 레이어 추가 가능
  */
 const CACHE_TTL = 60 * 1000; // 1분
-const memoryCache = new Map<string, { data: any; timestamp: number }>();
+const memoryCache = new Map<string, { data: unknown; timestamp: number }>();
 
 export const cachedQuery = async <T>(
   key: string,

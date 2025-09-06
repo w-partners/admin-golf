@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // 사용자 생성
-    const createData: any = {
+    const createData: unknown = {
       name,
       phone,
       password: hashedPassword,

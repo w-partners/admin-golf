@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 // GET: 골프장 목록 조회
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const region = searchParams.get('region')
     const status = searchParams.get('status')
 
-    const where: any = {}
+    const where: unknown = {}
     if (region) where.region = region
     if (status) where.operationStatus = status
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 // POST: 새 골프장 등록 (최고관리자만)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

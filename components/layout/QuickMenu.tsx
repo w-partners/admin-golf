@@ -16,7 +16,7 @@ import {
   FileText,
   Trophy
 } from 'lucide-react'
-import { COMMON_TEXTS } from '@/constants/commonTexts'
+// TODO: Constants 파일 복구 필요
 
 interface QuickMenuProps {
   isMobile?: boolean
@@ -73,15 +73,15 @@ export function QuickMenu({ isMobile = false, onNavigate }: QuickMenuProps) {
 
   const userAccountType = session.user.accountType
 
-  // 권한별 메뉴 접근 가능 여부
+  // 권한별 메뉴 접근 가능 여부 - TODO: DB에서 권한 정보 가져오기
   const canAccessTeeTime = true // 모든 사용자
-  const canCreateTeeTime = ['INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER', 'TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
-  const canAccessGolfCourse = ['ADMIN', 'SUPER_ADMIN', 'GOLF_COURSE'].includes(userAccountType)
-  const canCreateGolfCourse = ['ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
-  const canAccessPerformance = ['INTERNAL_MANAGER', 'EXTERNAL_MANAGER', 'PARTNER', 'TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
-  const canAccessMembers = ['ADMIN', 'SUPER_ADMIN', 'TEAM_LEADER'].includes(userAccountType)
+  const canCreateTeeTime = userAccountType !== 'MEMBER' && userAccountType !== 'GOLF_COURSE'
+  const canAccessGolfCourse = userAccountType === 'ADMIN' || userAccountType === 'SUPER_ADMIN' || userAccountType === 'GOLF_COURSE'
+  const canCreateGolfCourse = userAccountType === 'ADMIN' || userAccountType === 'SUPER_ADMIN'
+  const canAccessPerformance = userAccountType !== 'MEMBER' && userAccountType !== 'GOLF_COURSE'
+  const canAccessMembers = userAccountType === 'ADMIN' || userAccountType === 'SUPER_ADMIN' || userAccountType === 'TEAM_LEADER'
   const canAccessNotices = true // 모든 사용자
-  const canAccessTeam = ['TEAM_LEADER', 'ADMIN', 'SUPER_ADMIN'].includes(userAccountType)
+  const canAccessTeam = userAccountType === 'TEAM_LEADER' || userAccountType === 'ADMIN' || userAccountType === 'SUPER_ADMIN'
 
   const handleNavigation = (href: string) => {
     if (onNavigate) {
@@ -94,56 +94,56 @@ export function QuickMenu({ isMobile = false, onNavigate }: QuickMenuProps) {
     {
       href: '/',
       icon: <Home className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.DASHBOARD,
+      label: '대시보드',
       show: true,
       active: pathname === '/'
     },
     {
       href: '/tee-times',
       icon: <Calendar className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.TEE_TIME_VIEW,
+      label: '티타임 조회',
       show: canAccessTeeTime,
       active: pathname.startsWith('/tee-times') && !pathname.includes('/new')
     },
     {
       href: '/tee-times/new',
       icon: <Plus className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.TEE_TIME_CREATE,
+      label: '티타임 등록',
       show: canCreateTeeTime,
       active: pathname === '/tee-times/new'
     },
     {
       href: '/golf-courses',
       icon: <MapPin className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.GOLF_COURSE,
+      label: '골프장 관리',
       show: canAccessGolfCourse,
       active: pathname.startsWith('/golf-courses')
     },
     {
       href: '/performance',
       icon: <BarChart3 className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.PERFORMANCE,
+      label: '실적 등록',
       show: canAccessPerformance,
       active: pathname.startsWith('/performance')
     },
     {
       href: '/members',
       icon: <Users className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.MEMBERS,
+      label: '회원 관리',
       show: canAccessMembers,
       active: pathname.startsWith('/members')
     },
     {
       href: '/team',
       icon: <Trophy className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.TEAM,
+      label: '팀 관리',
       show: canAccessTeam,
       active: pathname.startsWith('/team')
     },
     {
       href: '/notices',
       icon: <FileText className="h-4 w-4" />,
-      label: COMMON_TEXTS.MENU_ITEMS.NOTICES,
+      label: '공지사항',
       show: canAccessNotices,
       active: pathname.startsWith('/notices')
     }
