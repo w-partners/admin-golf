@@ -131,4 +131,13 @@
 
 ---
 
-Last Updated: 2025-01-06 16:15:00 KST
+## 🏷️ Checkpoint Information
+
+- **Tag**: `CP_20250106_161500_site-operation-recovery`
+- **Commit**: `6fb56fa`
+- **Status**: ✅ Local checkpoint created
+- **Note**: 원격 저장소 미설정 (로컬 전용 프로젝트)
+
+---
+
+Last Updated: 2025-01-06 16:17:00 KST
