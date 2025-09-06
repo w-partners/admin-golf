@@ -39,37 +39,46 @@ const GOLF_COURSES = [
   { id: '19', name: '무주덕유산CC', region: '전라' }
 ]
 
-// 날짜 생성 함수
+// 캐시 저장소
+const cache = new Map<string, { data: any, timestamp: number }>()
+const CACHE_DURATION = 60 * 1000 // 1분
+
+// 날짜 생성 함수 (최적화)
 function generateDateColumns(days: number = 90) {
   const columns = []
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
   
   for (let i = 0; i < days; i++) {
-    const date = new Date(today)
-    date.setDate(today.getDate() + i)
-    
-    const isToday = i === 0
-    const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()]
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6
+    const date = new Date(today.getTime() + i * 24 * 60 * 60 * 1000)
+    const dayOfWeek = date.getDay()
     
     columns.push({
       date: date.toISOString().split('T')[0],
       displayDate: `${date.getMonth() + 1}/${date.getDate()}`,
-      dayOfWeek,
-      isToday,
-      isWeekend
+      dayOfWeek: ['일', '월', '화', '수', '목', '금', '토'][dayOfWeek],
+      isToday: i === 0,
+      isWeekend: dayOfWeek === 0 || dayOfWeek === 6
     })
   }
   
   return columns
 }
 
-// 티타임 수량 생성 (랜덤)
+// 티타임 수량 생성 (최적화 - 사전 계산)
+const teeTimeCache = new Map<string, any>()
+
 function generateTeeTimeCounts(teeTimeType: string, bookingType: string, golfCourseId: string, dateIndex: number) {
-  // 골프장별 기본 수량 차이
-  const courseVariation = parseInt(golfCourseId) % 5 + 1 // 1-5 배수
+  const cacheKey = `${teeTimeType}-${bookingType}-${golfCourseId}-${dateIndex}`
   
-  // 기본 수량 (타입별로 다르게)
+  if (teeTimeCache.has(cacheKey)) {
+    return teeTimeCache.get(cacheKey)
+  }
+  
+  // 골프장별 기본 수량 차이
+  const courseVariation = parseInt(golfCourseId) % 5 + 1
+  
+  // 기본 수량
   let baseCount = 0
   if (teeTimeType === 'DAILY') {
     baseCount = bookingType === 'BOOKING' ? 6 : 10
@@ -77,19 +86,22 @@ function generateTeeTimeCounts(teeTimeType: string, bookingType: string, golfCou
     baseCount = bookingType === 'BOOKING' ? 2 : 4
   }
   
-  // 날짜별 변동 (미래로 갈수록 감소)
+  // 날짜별 변동
   const dateVariation = Math.max(0.3, 1 - (dateIndex * 0.01))
   
-  // 랜덤 변동 (80~120%)
+  // 랜덤 변동
   const randomVariation = 0.8 + (Math.random() * 0.4)
   
   const finalCount = baseCount * courseVariation * dateVariation * randomVariation
   
-  return {
-    timeSlot1: Math.floor(finalCount * 0.2), // 1부: 20%
-    timeSlot2: Math.floor(finalCount * 0.6), // 2부: 60% 
-    timeSlot3: Math.floor(finalCount * 0.2), // 3부: 20%
+  const result = {
+    timeSlot1: Math.floor(finalCount * 0.2),
+    timeSlot2: Math.floor(finalCount * 0.6),
+    timeSlot3: Math.floor(finalCount * 0.2),
   }
+  
+  teeTimeCache.set(cacheKey, result)
+  return result
 }
 
 export async function GET(request: NextRequest) {
@@ -117,21 +129,38 @@ export async function GET(request: NextRequest) {
     
     const { type: teeTimeType, booking: bookingType, days } = validation.data
     
+    // 캐시 확인
+    const cacheKey = `${teeTimeType}-${bookingType}-${days}`
+    const cached = cache.get(cacheKey)
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return NextResponse.json(cached.data, {
+        headers: {
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, max-age=60, stale-while-revalidate=120'
+        }
+      })
+    }
+    
     // 날짜 컬럼 생성
     const dateColumns = generateDateColumns(days)
     
-    // 지역별로 그룹화
-    const regions = [...new Set(GOLF_COURSES.map(gc => gc.region))]
+    // 지역별로 그룹화 (최적화)
+    const regionMap = new Map<string, typeof GOLF_COURSES>()
+    for (const course of GOLF_COURSES) {
+      if (!regionMap.has(course.region)) {
+        regionMap.set(course.region, [])
+      }
+      regionMap.get(course.region)!.push(course)
+    }
     
-    const matrixData = regions.map(region => {
-      const regionalCourses = GOLF_COURSES.filter(gc => gc.region === region)
-      
+    // 병렬 처리를 위한 Promise 배열
+    const matrixPromises = Array.from(regionMap.entries()).map(async ([region, courses]) => {
       return {
         region,
-        golfCourses: regionalCourses.map(course => ({
-          id: course.id,
-          name: course.name,
-          dates: dateColumns.map((dateCol, dateIndex) => {
+        golfCourses: courses.map(course => {
+          // 날짜별 데이터를 청크로 처리
+          const dates = dateColumns.map((dateCol, dateIndex) => {
             const counts = generateTeeTimeCounts(teeTimeType, bookingType, course.id, dateIndex)
             return {
               date: dateCol.date,
@@ -139,25 +168,33 @@ export async function GET(request: NextRequest) {
               total: counts.timeSlot1 + counts.timeSlot2 + counts.timeSlot3
             }
           })
-        }))
+          
+          return {
+            id: course.id,
+            name: course.name,
+            dates
+          }
+        })
       }
     })
     
-    // 요약 정보 계산
-    const totalGolfCourses = GOLF_COURSES.length
-    const totalTeeTimes = matrixData.reduce((total, regionData) => {
-      return total + regionData.golfCourses.reduce((regionTotal, course) => {
-        return regionTotal + course.dates.reduce((dateTotal, dateData) => {
-          return dateTotal + dateData.total
-        }, 0)
-      }, 0)
-    }, 0)
+    const matrixData = await Promise.all(matrixPromises)
+    
+    // 요약 정보 계산 (최적화)
+    let totalTeeTimes = 0
+    for (const regionData of matrixData) {
+      for (const course of regionData.golfCourses) {
+        for (const dateData of course.dates) {
+          totalTeeTimes += dateData.total
+        }
+      }
+    }
     
     const response = {
       matrixData,
       dateColumns,
       summary: {
-        totalGolfCourses,
+        totalGolfCourses: GOLF_COURSES.length,
         totalTeeTimes,
         teeTimeType,
         bookingType,
@@ -168,10 +205,17 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    // 개발 중 지연 시뮬레이션 (실제 DB 호출처럼)
-    await new Promise(resolve => setTimeout(resolve, 200))
+    // 캐시 저장
+    cache.set(cacheKey, { data: response, timestamp: Date.now() })
     
-    return NextResponse.json(response)
+    // 인위적 지연 제거 - 실제 데이터베이스 호출시에만 필요
+    
+    return NextResponse.json(response, {
+      headers: {
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=120'
+      }
+    })
     
   } catch (error) {
     console.error('Matrix API error:', error)
