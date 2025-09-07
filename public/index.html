@@ -73,9 +73,9 @@
         /* ============ 매트릭스 테이블 컨테이너 스타일 ============ */
         /* Matrix Table Container */
         .matrix-container {
-            height: 600px;
-            overflow: auto;
             background: white;
+            min-height: 400px;
+            overflow-x: auto;
         }
 
         .matrix-table {
@@ -170,27 +170,36 @@
             flex: 1;
             background: #e9ecef;
             color: #495057;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-size: 11px;
+            padding: 8px 4px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
-            min-width: 30px;
+            min-width: 32px;
+            text-align: center;
+            border: 1px solid transparent;
         }
 
         .time-slot:hover {
             background: #007bff;
             color: white;
+            border-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,123,255,0.3);
         }
 
         .time-slot.has-data {
             background: #28a745;
             color: white;
+            border-color: #1e7e34;
+            font-weight: 600;
         }
 
-        .time-slot.fully-booked {
-            background: #dc3545;
-            color: white;
+        .time-slot.has-data:hover {
+            background: #1e7e34;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(40,167,69,0.4);
         }
 
         /* Row styling */
@@ -250,7 +259,7 @@
             }
 
             .matrix-container {
-                height: 500px;
+                min-height: 300px;
             }
         }
     </style>
@@ -326,17 +335,47 @@
 
             <div id="package-booking" class="tab-content">
                 <div class="matrix-container">
-                    <div style="padding: 40px; text-align: center; color: #6c757d;">
-                        패키지부킹 데이터 로딩 중...
-                    </div>
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th class="region-col">지역</th>
+                                <th class="golf-course-col">골프장</th>
+                                <th class="date-col">오늘<br>01/09</th>
+                                <th class="date-col">내일<br>01/10</th>
+                                <th class="date-col">모레<br>01/11</th>
+                                <th class="date-col">01/12<br>토</th>
+                                <th class="date-col">01/13<br>일</th>
+                                <th class="date-col">01/14<br>월</th>
+                                <th class="date-col">01/15<br>화</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-body-package-booking">
+                            <!-- 동적으로 생성될 매트릭스 데이터 -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <div id="package-join" class="tab-content">
                 <div class="matrix-container">
-                    <div style="padding: 40px; text-align: center; color: #6c757d;">
-                        패키지조인 데이터 로딩 중...
-                    </div>
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th class="region-col">지역</th>
+                                <th class="golf-course-col">골프장</th>
+                                <th class="date-col">오늘<br>01/09</th>
+                                <th class="date-col">내일<br>01/10</th>
+                                <th class="date-col">모레<br>01/11</th>
+                                <th class="date-col">01/12<br>토</th>
+                                <th class="date-col">01/13<br>일</th>
+                                <th class="date-col">01/14<br>월</th>
+                                <th class="date-col">01/15<br>화</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-body-package-join">
+                            <!-- 동적으로 생성될 매트릭스 데이터 -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -504,14 +543,9 @@
             return matrix;
         }
 
-        // API에서 매트릭스 데이터 로드
+        // API에서 매트릭스 데이터 로드 (탭별 필터링)
         async function 매트릭스데이터로드(tabName) {
-            // 1. localStorage에서 티타임 데이터 로드
-            const localTeeTimeData = localStorage에서티타임데이터로드();
-            const classifiedData = 티타임데이터분류(localTeeTimeData);
-            const localMatrixData = localStorage데이터를매트릭스로변환(classifiedData, tabName);
-            
-            // 2. API에서 티타임 매트릭스 데이터 로드
+            // 1. API에서 티타임 매트릭스 데이터 로드
             let apiMatrixData = {};
             try {
                 const response = await fetch('http://localhost:3001/api/tee-time-matrix');
@@ -519,87 +553,78 @@
                     apiMatrixData = await response.json();
                     console.log(`✅ API 매트릭스 데이터 로드 완료 (${tabName}):`, Object.keys(apiMatrixData).length, '개 골프장');
                 } else {
-                    console.log('⚠️ API 매트릭스 데이터 로드 실패, localStorage 데이터만 사용');
+                    console.log('⚠️ API 매트릭스 데이터 로드 실패');
                     apiMatrixData = {};
                 }
             } catch (error) {
-                console.log('⚠️ API 매트릭스 데이터 로드 오류, localStorage 데이터만 사용:', error.message);
+                console.log('⚠️ API 매트릭스 데이터 로드 오류:', error.message);
                 apiMatrixData = {};
             }
             
-            // 3. API 데이터를 매트릭스 형식으로 변환
-            const convertedApiMatrix = [];
+            // 2. 탭별 필터링된 데이터 생성
+            const filteredMatrix = [];
             Object.entries(apiMatrixData).forEach(([courseKey, courseData]) => {
-                convertedApiMatrix.push({
+                const filteredDates = {};
+                
+                // 각 날짜별로 해당 탭에 맞는 데이터만 추출
+                Object.entries(courseData.dates).forEach(([date, dateData]) => {
+                    filteredDates[date] = { part1: 0, part2: 0, part3: 0 };
+                    
+                    // 탭별로 해당하는 데이터만 집계
+                    if (tabName === 'daily-booking') {
+                        filteredDates[date].part1 = dateData.부킹_part1 || 0;
+                        filteredDates[date].part2 = dateData.부킹_part2 || 0;
+                        filteredDates[date].part3 = dateData.부킹_part3 || 0;
+                    } else if (tabName === 'daily-join') {
+                        filteredDates[date].part1 = dateData.조인_part1 || 0;
+                        filteredDates[date].part2 = dateData.조인_part2 || 0;
+                        filteredDates[date].part3 = dateData.조인_part3 || 0;
+                    } else if (tabName === 'package-booking') {
+                        filteredDates[date].part1 = dateData.패키지_part1 || 0;
+                        filteredDates[date].part2 = dateData.패키지_part2 || 0;
+                        filteredDates[date].part3 = dateData.패키지_part3 || 0;
+                    } else if (tabName === 'package-join') {
+                        // 패키지조인은 현재 별도 구분이 없어서 0으로 처리 (추후 확장 가능)
+                        filteredDates[date].part1 = 0;
+                        filteredDates[date].part2 = 0;
+                        filteredDates[date].part3 = 0;
+                    }
+                });
+                
+                filteredMatrix.push({
                     golfCourse: courseData.courseName,
                     region: courseData.region,
-                    dates: courseData.dates
+                    dates: filteredDates
                 });
             });
             
-            // 4. 날짜 배열 생성 (90일)
+            // 3. 날짜 배열 생성 (90일)
             const dates = 날짜생성().map(d => d.fullDate);
             
-            // 5. API 데이터와 localStorage 데이터 통합
-            const combinedMatrix = [...convertedApiMatrix];
-            
-            // localStorage 데이터를 기존 API 데이터와 병합
-            localMatrixData.forEach(localCourse => {
-                const existingCourse = combinedMatrix.find(c => 
-                    c.golfCourse === localCourse.golfCourse && c.region === localCourse.region
-                );
-                
-                if (existingCourse) {
-                    // 기존 골프장이 있으면 날짜별 데이터 병합
-                    Object.entries(localCourse.dates).forEach(([date, timeParts]) => {
-                        if (!existingCourse.dates[date]) {
-                            existingCourse.dates[date] = { part1: 0, part2: 0, part3: 0 };
-                        }
-                        existingCourse.dates[date].part1 += timeParts['1부'] || 0;
-                        existingCourse.dates[date].part2 += timeParts['2부'] || 0;
-                        existingCourse.dates[date].part3 += timeParts['3부'] || 0;
-                    });
-                } else {
-                    // 새로운 골프장이면 추가 (API 형식에 맞게 변환)
-                    const convertedDates = {};
-                    Object.entries(localCourse.dates).forEach(([date, timeParts]) => {
-                        convertedDates[date] = {
-                            part1: timeParts['1부'] || 0,
-                            part2: timeParts['2부'] || 0,
-                            part3: timeParts['3부'] || 0
-                        };
-                    });
-                    
-                    combinedMatrix.push({
-                        golfCourse: localCourse.golfCourse,
-                        region: localCourse.region,
-                        dates: convertedDates
-                    });
-                }
-            });
-            
-            // 6. 최종 데이터 저장 (API 형식에 맞게)
+            // 4. 최종 데이터 저장
             매트릭스데이터[tabName] = {
                 dates: dates,
-                matrix: combinedMatrix
+                matrix: filteredMatrix
             };
             현재매트릭스데이터 = 매트릭스데이터[tabName];
             날짜배열 = dates;
             
-            console.log(`🔄 통합 매트릭스 데이터 준비 완료 (${tabName}):`, {
-                api: convertedApiMatrix.length,
-                local: localMatrixData.length,
-                combined: combinedMatrix.length
+            console.log(`🔄 탭별 매트릭스 데이터 준비 완료 (${tabName}):`, {
+                courses: filteredMatrix.length,
+                dates: dates.length
             });
         }
 
-        // 매트릭스 테이블 생성 (PostgreSQL 데이터 기반)
+        // 탭별 매트릭스 테이블 생성 함수
         function 매트릭스테이블생성(tabName) {
             const tbody = document.getElementById(`matrix-body-${tabName}`);
-            if (!tbody) return;
+            if (!tbody) {
+                console.error(`테이블 바디를 찾을 수 없습니다: matrix-body-${tabName}`);
+                return;
+            }
 
-            const matrixInfo = 매트릭스데이터[tabName];
-            if (!matrixInfo || !matrixInfo.matrix || matrixInfo.matrix.length === 0) {
+            const tabData = 매트릭스데이터[tabName];
+            if (!tabData || !tabData.matrix || tabData.matrix.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 40px; color: #666;">데이터를 로드 중입니다...</td></tr>';
                 return;
             }
@@ -607,11 +632,12 @@
             let html = '';
             let regionCount = 0;
             let golfCourseCount = 0;
+            let totalTeeTimeCount = 0;
             const processedRegions = new Set();
 
             // 지역별 그룹화
             const regionGroups = {};
-            matrixInfo.matrix.forEach(item => {
+            tabData.matrix.forEach(item => {
                 if (!regionGroups[item.region]) {
                     regionGroups[item.region] = [];
                 }
@@ -639,22 +665,29 @@
                     // 날짜별 시간대 칼럼들
                     날짜배열.forEach(date => {
                         const dateSlots = course.dates[date] || { part1: 0, part2: 0, part3: 0 };
+                        
+                        const part1Count = dateSlots.part1 || 0;
+                        const part2Count = dateSlots.part2 || 0;
+                        const part3Count = dateSlots.part3 || 0;
+                        
+                        totalTeeTimeCount += part1Count + part2Count + part3Count;
+                        
                         html += `<td class="date-col">
                             <div class="time-slots">
-                                <div class="time-slot ${dateSlots.part1 > 0 ? 'has-data' : ''}" 
-                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '1부')"
-                                     title="1부: ${dateSlots.part1}개">
-                                     ${dateSlots.part1}
+                                <div class="time-slot ${part1Count > 0 ? 'has-data' : ''}" 
+                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '1부', '${tabName}')"
+                                     title="1부: ${part1Count}개">
+                                     ${part1Count}
                                 </div>
-                                <div class="time-slot ${dateSlots.part2 > 0 ? 'has-data' : ''}" 
-                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '2부')"
-                                     title="2부: ${dateSlots.part2}개">
-                                     ${dateSlots.part2}
+                                <div class="time-slot ${part2Count > 0 ? 'has-data' : ''}" 
+                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '2부', '${tabName}')"
+                                     title="2부: ${part2Count}개">
+                                     ${part2Count}
                                 </div>
-                                <div class="time-slot ${dateSlots.part3 > 0 ? 'has-data' : ''}" 
-                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '3부')"
-                                     title="3부: ${dateSlots.part3}개">
-                                     ${dateSlots.part3}
+                                <div class="time-slot ${part3Count > 0 ? 'has-data' : ''}" 
+                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '3부', '${tabName}')"
+                                     title="3부: ${part3Count}개">
+                                     ${part3Count}
                                 </div>
                             </div>
                         </td>`;
@@ -666,58 +699,52 @@
             
             tbody.innerHTML = html;
             
-            // 통계 업데이트
-            document.getElementById('matrix-stats').textContent = 
-                `총 ${golfCourseCount}개 골프장 • ${regionCount}개 지역`;
+            // 통계 업데이트 (현재 활성 탭에서만)
+            if (tabName === currentMatrixTab) {
+                document.getElementById('matrix-stats').textContent = 
+                    `총 ${golfCourseCount}개 골프장 • ${totalTeeTimeCount}개 티타임`;
+            }
         }
 
 
-        // 매트릭스 탭 전환
-        async function switchMatrixTab(tabName) {
-            // 모든 탭 버튼 비활성화
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        // 탭 전환 함수
+        function switchMatrixTab(tabName) {
+            console.log(`🔄 탭 전환: ${tabName}`);
             
-            // 모든 탭 컨텐츠 숨김
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // 선택된 탭 활성화
+            // 탭 버튼 활성화 상태 변경
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+            
+            // 탭 컨텐츠 활성화 상태 변경
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             
+            // 현재 활성 탭 업데이트
             currentMatrixTab = tabName;
             
-            // 로딩 상태 표시
-            const tbody = document.getElementById(`matrix-body-${tabName}`);
-            if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 40px; color: #666;">데이터 로딩 중...</td></tr>';
-            }
-            
-            // 매트릭스 데이터 로드 후 테이블 생성
-            await 매트릭스데이터로드(tabName);
-            현재매트릭스데이터 = 매트릭스데이터[tabName];  // 탭 전환시 현재 데이터 업데이트
-            매트릭스테이블생성(tabName);
+            // 해당 탭의 매트릭스 데이터 로드 및 테이블 생성
+            매트릭스데이터로드(tabName).then(() => {
+                매트릭스테이블생성(tabName);
+            });
         }
 
         // 상세 페이지 이동
-        function 상세페이지이동(golfCourse, date, timePart) {
-            // 현재 활성 탭 정보 가져기
-            const activeTab = document.querySelector('.tab-button.active');
-            let type = 'all';
+        function 상세페이지이동(golfCourse, date, timePart, tabName) {
+            // 탭별 type 매핑
+            const typeMap = {
+                'daily-booking': 'booking',
+                'daily-join': 'join', 
+                'package-booking': 'package',
+                'package-join': 'package'  // 패키지조인은 패키지로 처리
+            };
             
-            if (activeTab) {
-                const tabText = activeTab.textContent.toLowerCase();
-                if (tabText.includes('부킹')) type = 'booking';
-                else if (tabText.includes('조인')) type = 'join';
-            }
+            const type = typeMap[tabName] || 'all';
             
             // 지역 정보를 매트릭스 데이터에서 찾기
             let region = '';
-            if (현재매트릭스데이터 && 현재매트릭스데이터.matrix) {
-                const courseData = 현재매트릭스데이터.matrix.find(item => 
+            const tabData = 매트릭스데이터[tabName];
+            if (tabData && tabData.matrix) {
+                const courseData = tabData.matrix.find(item => 
                     item.golfCourse === golfCourse
                 );
                 if (courseData) {
@@ -768,10 +795,10 @@
                 });
             });
             
-            // 3. 초기 매트릭스 데이터 로드 (데일리부킹 탭)
+            // 3. 초기 탭 데이터 로드 (데일리부킹부터 시작)
             console.log('초기 매트릭스 데이터 로드 중...');
-            await 매트릭스데이터로드('daily-booking');
-            매트릭스테이블생성('daily-booking');
+            await 매트릭스데이터로드(currentMatrixTab);
+            매트릭스테이블생성(currentMatrixTab);
             
             console.log('✅ 시스템 초기화 완료');
         });

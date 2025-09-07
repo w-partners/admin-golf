@@ -13,152 +13,65 @@
 
         body {
             font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f8f9fa;
             line-height: 1.4;
+        }
+
+        /* 전역 헤더 컨테이너 */
+        #global-header-container {
+            /* 동적으로 생성됨 */
+        }
+
+        /* 퀵메뉴 컨테이너 */
+        #quick-menu-container {
+            /* 동적으로 생성됨 */
         }
 
         .header {
             background: linear-gradient(135deg, #2c5282 0%, #2b6cb0 100%);
             color: white;
-            padding: 20px;
+            padding: 15px 0;
             text-align: center;
         }
 
         .header h1 {
             font-size: 24px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .header .info {
-            font-size: 16px;
+            font-size: 14px;
             opacity: 0.9;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .back-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            transition: background 0.3s;
-        }
-
-        .back-btn:hover {
-            background: #5a6268;
-        }
-
-        .tee-time-table {
+        .controls {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .table-header {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 2px solid #007bff;
-            font-weight: bold;
-            color: #495057;
-        }
-
-        .table-content {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
-            white-space: nowrap;
-        }
-
-        tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .time-badge {
-            background: #007bff;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .players-badge {
-            background: #28a745;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .players-badge.join {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .green-fee {
-            font-weight: bold;
-            color: #e91e63;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6c757d;
-        }
-
-        .empty-state .icon {
-            font-size: 48px;
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #495057;
-        }
-
-        .empty-state p {
-            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .stats {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 20px;
-            display: flex;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .stat-item {
-            flex: 1;
+            padding: 10px;
         }
 
         .stat-number {
@@ -174,49 +87,246 @@
             margin-top: 5px;
         }
 
+        /* 테이블 스타일 */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #007bff;
+            font-weight: bold;
+            color: #495057;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-content {
+            overflow-x: auto;
+            max-height: 70vh;
+        }
+
+        .tee-time-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: white;
+        }
+
+        .tee-time-table th,
+        .tee-time-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            min-width: 80px;
+        }
+
+        .tee-time-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tee-time-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* 인라인 편집 스타일 */
+        .editable-cell {
+            position: relative;
+        }
+
+        .editable-cell input,
+        .editable-cell select {
+            width: 100%;
+            border: 1px solid transparent;
+            background: transparent;
+            padding: 4px;
+            text-align: center;
+            font-size: inherit;
+        }
+
+        .editable-cell input:focus,
+        .editable-cell select:focus {
+            border: 2px solid #007bff;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .editable-cell.editing input,
+        .editable-cell.editing select {
+            border: 2px solid #007bff;
+            background: white;
+        }
+
+        /* 체크박스 스타일 */
+        .checkbox-cell {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* 액션 버튼 */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+            transform: translateY(-1px);
+        }
+
+        /* 키보드 네비게이션 표시 */
+        .keyboard-help {
+            background: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* 편집 가능/불가능 상태 스타일 */
+        .editable-cell input[type="text"],
+        .editable-cell input[type="number"],
+        .editable-cell input[type="date"],
+        .editable-cell input[type="time"],
+        .editable-cell select {
+            border: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .editable-cell.edit-mode input[type="text"],
+        .editable-cell.edit-mode input[type="number"],
+        .editable-cell.edit-mode input[type="date"],
+        .editable-cell.edit-mode input[type="time"],
+        .editable-cell.edit-mode select {
+            border: 1px solid #007bff;
+            background-color: #ffffff;
+            cursor: text;
+        }
+
+        .row-edit-mode {
+            background-color: #fff3cd !important;
+        }
+
+        .btn-edit {
+            background: #28a745;
+            color: white;
+            border: 1px solid #28a745;
+            padding: 4px 8px;
+            margin: 0 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .btn-edit:hover {
+            background: #218838;
+            border-color: #1e7e34;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: 1px solid #6c757d;
+            padding: 4px 8px;
+            margin: 0 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+            border-color: #545b62;
+        }
+
         @media (max-width: 768px) {
             .container {
-                padding: 0 10px;
-            }
-            
-            .header h1 {
-                font-size: 20px;
+                padding: 10px;
             }
             
             .stats {
-                flex-direction: column;
-                gap: 15px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
             
-            table {
+            .tee-time-table {
                 font-size: 12px;
             }
             
-            th, td {
-                padding: 8px 4px;
+            .tee-time-table th,
+            .tee-time-table td {
+                padding: 6px 4px;
+                min-width: 60px;
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 id="page-title">티타임 목록</h1>
-        <div class="info" id="page-info">선택된 조건의 티타임을 확인하세요</div>
-    </div>
-
-    <!-- Quick Menu -->
-    <div style="background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 10px 0;">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="all-tee-times.html" style="padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">전체티타임리스트</a>
-            <a href="tee-time-register.html" style="padding: 8px 16px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">티타임 등록</a>
-            <a href="golf-courses.html" style="padding: 8px 16px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">골프장 관리</a>
-            <a href="index.html" style="padding: 8px 16px; background: #17a2b8; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;">매트릭스 뷰</a>
-        </div>
+        <h1 id="page-title">티타임 관리</h1>
+        <div class="info" id="page-info">엑셀 방식으로 티타임을 편집하고 관리하세요</div>
     </div>
 
     <div class="container">
-        <a href="index.html" class="back-btn">← 매트릭스 뷰로 돌아가기</a>
-        
+        <div class="keyboard-help">
+            💡 <strong>키보드 사용법:</strong> 
+            Tab: 다음 필드 | Shift+Tab: 이전 필드 | Space: 체크박스 토글 | Enter: 저장 | ESC: 취소 | Del: 삭제
+        </div>
+
         <div class="stats">
             <div class="stat-item">
                 <span class="stat-number" id="total-count">0</span>
@@ -236,26 +346,37 @@
             </div>
         </div>
 
-        <div class="tee-time-table">
-            <div class="table-header" id="table-header">
-                티타임 목록
+        <div class="table-container">
+            <div class="table-header">
+                <span id="table-title">티타임 목록</span>
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="addNewRow()">+ 새 티타임 추가</button>
+                    <button class="btn btn-primary" onclick="saveAllChanges()">💾 모두 저장</button>
+                    <button class="btn btn-danger" onclick="deleteSelected()">🗑️ 선택 삭제</button>
+                </div>
             </div>
+
             <div class="table-content">
-                <table>
+                <table class="tee-time-table" id="tee-time-table">
                     <thead>
                         <tr>
+                            <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                            <th class="conditional-column region-column">지역</th>
+                            <th class="conditional-column golf-course-column">골프장</th>
+                            <th class="conditional-column date-column">날짜</th>
                             <th>시간</th>
-                            <th>골프장</th>
-                            <th>날짜</th>
-                            <th>그린피</th>
+                            <th class="conditional-column timepart-column">시간대</th>
+                            <th>그린피<br><small>(만원)</small></th>
                             <th>인원</th>
+                            <th>예약타입</th>
                             <th>요청사항</th>
                             <th>홀선택</th>
                             <th>캐디</th>
-                            <th>선입금</th>
-                            <th>식사</th>
-                            <th>카트비</th>
+                            <th>선입금<br><small>(만원)</small></th>
+                            <th>식사포함</th>
+                            <th>카트비포함</th>
                             <th>기타</th>
+                            <th>상태</th>
                             <th>관리</th>
                         </tr>
                     </thead>
@@ -263,137 +384,428 @@
                         <!-- 동적으로 생성될 티타임 목록 -->
                     </tbody>
                 </table>
-            </div>
-            
-            <!-- 데이터가 없을 때 표시 -->
-            <div class="empty-state" id="empty-state" style="display: none;">
-                <div class="icon">🏌️</div>
-                <h3>등록된 티타임이 없습니다</h3>
-                <p>선택하신 조건에 해당하는 티타임이 없습니다.</p>
+
+                <!-- 데이터가 없을 때 표시 -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <div class="icon">🏌️</div>
+                    <h3>등록된 티타임이 없습니다</h3>
+                    <p>선택하신 조건에 해당하는 티타임이 없습니다.</p>
+                    <button class="btn btn-success" onclick="addNewRow()" style="margin-top: 15px;">+ 첫 티타임 추가하기</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- 공통 컴포넌트 로드 -->
+    <script src="components/quick-menu.js"></script>
+    
     <script>
+        // 전역 변수
+        let golfCourseOptions = [];
+        let editingCells = new Set();
+        let teeTimes = [];
+        let filteredTeeTimes = [];
+        let currentEditingRow = null;
+
         // URL 파라미터 파싱
         function getURLParams() {
             const urlParams = new URLSearchParams(window.location.search);
             return {
-                golfCourse: urlParams.get('golfCourse') || '',
-                region: urlParams.get('region') || '',
+                golfCourse: urlParams.get('golfCourse') ? decodeURIComponent(urlParams.get('golfCourse')) : '',
+                region: urlParams.get('region') ? decodeURIComponent(urlParams.get('region')) : '',
                 date: urlParams.get('date') || '',
-                timePart: urlParams.get('timePart') || '',
-                type: urlParams.get('type') || 'all' // all, booking, join
+                timePart: urlParams.get('timePart') ? decodeURIComponent(urlParams.get('timePart')) : '',
+                type: urlParams.get('type') || 'booking'
             };
         }
 
-        // localStorage에서 티타임 데이터 로드
-        function loadTeeTimeData() {
+        // 골프장 데이터 로드
+        async function loadGolfCourses() {
             try {
-                const savedData = localStorage.getItem('savedTeeTimes');
-                return savedData ? JSON.parse(savedData) : [];
+                console.log('🏌️ 골프장 데이터 로드 중...');
+                const response = await fetch('http://localhost:3001/api/golf-courses');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    golfCourseOptions = result.data || [];
+                    console.log('✅ 골프장 데이터 로드 완료:', golfCourseOptions.length + '개');
+                } else {
+                    console.error('❌ 골프장 API 호출 실패');
+                }
             } catch (error) {
-                console.error('localStorage 데이터 로드 실패:', error);
-                return [];
+                console.error('❌ 골프장 데이터 로드 실패:', error);
             }
         }
 
-        // 시간대 분류 함수
+        // 골프장 선택 옵션 생성
+        function createGolfCourseOptions() {
+            return golfCourseOptions.map(course => 
+                `<option value="${course.name}">${course.name}</option>`
+            ).join('');
+        }
+
+        // 날짜 포맷팅 함수 (ISO → YYYY-MM-DD)
+        function formatDateForInput(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString; // 이미 올바른 형식인 경우
+                return date.toISOString().split('T')[0];
+            } catch (error) {
+                console.error('날짜 형식 변환 오류:', error);
+                return '';
+            }
+        }
+
+        // 시간대 자동 결정
         function getTimePart(time) {
-            const hour = parseInt(time.substring(0, 2)) || 0;
+            if (!time) return '';
+            const hour = parseInt(time.toString().replace(':', '').substring(0, 2)) || 0;
             if (hour < 10) return '1부';
             else if (hour >= 15) return '3부';
             else return '2부';
         }
 
-        // API 응답 데이터를 정규화 (snake_case -> camelCase)
-        function normalizeApiData(apiData) {
-            return apiData.map(item => ({
-                id: item.id,
-                golfCourse: item.golf_course_name || item.golfCourse,
-                region: item.region,
-                date: item.date ? item.date.split('T')[0] : '',
-                time: item.time,
-                timePart: item.time_part || item.timePart,
-                greenFee: item.green_fee || item.greenFee,
-                players: item.players,
-                bookingType: item.booking_type || item.bookingType,
-                request: item.request,
-                hole: item.hole,
-                caddy: item.caddy,
-                prepay: item.prepay,
-                meal: item.meal,
-                cart: item.cart,
-                other: item.other,
-                status: item.status
-            }));
+        // 예약타입 자동 결정
+        function getBookingType(players) {
+            const playerCount = parseInt(players) || 0;
+            return playerCount >= 4 ? '부킹' : '조인';
         }
 
-        // 티타임 데이터 필터링
-        function filterTeeTimeData(allData, params) {
-            return allData.filter(teeTime => {
-                // 골프장 필터
-                if (params.golfCourse && teeTime.golfCourse !== params.golfCourse) {
-                    return false;
-                }
+        // 지역 자동 결정
+        function getRegionByGolfCourse(golfCourseName) {
+            const course = golfCourseOptions.find(c => c.name === golfCourseName);
+            return course ? course.region : '';
+        }
+
+        // 티타임 데이터 로드
+        async function loadTeeTimeData() {
+            try {
+                console.log('🔄 티타임 데이터 로드 중...');
                 
-                // 날짜 필터
-                if (params.date && teeTime.date !== params.date) {
-                    return false;
-                }
+                const params = getURLParams();
+                const apiUrl = new URL('http://localhost:3001/api/tee-times');
                 
-                // 시간대 필터
-                if (params.timePart && getTimePart(teeTime.time) !== params.timePart) {
-                    return false;
-                }
+                // URL 파라미터를 API 호출에 포함
+                if (params.golfCourse) apiUrl.searchParams.append('golfCourse', params.golfCourse);
+                if (params.region) apiUrl.searchParams.append('region', params.region);
+                if (params.date) apiUrl.searchParams.append('date', params.date);
+                if (params.timePart) apiUrl.searchParams.append('timePart', params.timePart);
+                if (params.type && params.type !== 'all') apiUrl.searchParams.append('type', params.type);
+
+                console.log('📡 API 호출:', apiUrl.toString());
                 
-                // 타입 필터 (부킹/조인)
-                if (params.type !== 'all') {
-                    const players = parseInt(teeTime.players) || 0;
-                    const isBooking = players >= 4;
-                    
-                    if (params.type === 'booking' && !isBooking) return false;
-                    if (params.type === 'join' && isBooking) return false;
+                const response = await fetch(apiUrl.toString());
+                if (response.ok) {
+                    const result = await response.json();
+                    teeTimes = result.data || [];
+                    filteredTeeTimes = [...teeTimes];
+                    console.log('✅ 티타임 데이터 로드 완료:', teeTimes.length + '개');
+                } else {
+                    console.log('⚠️ API 호출 실패');
+                    teeTimes = [];
+                    filteredTeeTimes = [];
                 }
+            } catch (error) {
+                console.error('❌ 티타임 데이터 로드 실패:', error);
+                teeTimes = [];
+                filteredTeeTimes = [];
+            }
+        }
+
+        // 새로운 행 추가
+        function addNewRow() {
+            const params = getURLParams();
+            const newTeeTime = {
+                id: 'new_' + Date.now(),
+                golf_course_name: params.golfCourse || '',
+                region: params.region || getRegionByGolfCourse(params.golfCourse || ''),
+                date: params.date || new Date().toISOString().split('T')[0],
+                time: '09:00',
+                time_part: params.timePart || '1부',
+                green_fee: '',
+                players: '4',
+                booking_type: '부킹',
+                request: '',
+                hole: '18홀',
+                caddy: '포함',
+                prepay: '',
+                meal: '포함',
+                cart: '포함',
+                other: '',
+                status: 'AVAILABLE',
+                isNew: true
+            };
+
+            teeTimes.unshift(newTeeTime);
+            filteredTeeTimes.unshift(newTeeTime);
+            renderTable();
+            updateStats();
+
+            // 첫 번째 행의 첫 번째 편집 가능한 셀에 포커스
+            setTimeout(() => {
+                const firstRow = document.querySelector('#tee-time-tbody tr:first-child');
+                if (firstRow) {
+                    const firstEditableCell = firstRow.querySelector('.editable-cell input, .editable-cell select');
+                    if (firstEditableCell) {
+                        firstEditableCell.focus();
+                        firstEditableCell.select();
+                    }
+                }
+            }, 100);
+        }
+
+        // 테이블 렌더링
+        function renderTable() {
+            const tbody = document.getElementById('tee-time-tbody');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (filteredTeeTimes.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            tbody.innerHTML = filteredTeeTimes.map((teeTime, index) => {
+                const isNew = teeTime.isNew;
+                const rowClass = isNew ? 'new-row' : '';
                 
-                return true;
+                return `
+                    <tr class="${rowClass}" data-id="${teeTime.id}">
+                        <td>
+                            <input type="checkbox" class="row-select" value="${teeTime.id}">
+                        </td>
+                        <td class="editable-cell conditional-column region-column">
+                            <input type="text" value="${teeTime.region || ''}" 
+                                   onchange="updateTeeTime('${teeTime.id}', 'region', this.value)"
+                                   onkeydown="handleKeyDown(event, this)" readonly>
+                        </td>
+                        <td class="editable-cell conditional-column golf-course-column">
+                            <select onchange="updateTeeTime('${teeTime.id}', 'golf_course_name', this.value); updateRegion('${teeTime.id}', this.value)" 
+                                    onkeydown="handleKeyDown(event, this)">
+                                <option value="">골프장 선택</option>
+                                ${createGolfCourseOptions()}
+                            </select>
+                        </td>
+                        <td class="editable-cell conditional-column date-column">
+                            <input type="date" value="${formatDateForInput(teeTime.date)}" 
+                                   onchange="updateTeeTime('${teeTime.id}', 'date', this.value)"
+                                   onkeydown="handleKeyDown(event, this)">
+                        </td>
+                        <td class="editable-cell">
+                            <input type="time" value="${teeTime.time || ''}" 
+                                   onchange="updateTeeTime('${teeTime.id}', 'time', this.value); updateTimePart('${teeTime.id}', this.value)"
+                                   onkeydown="handleKeyDown(event, this)">
+                        </td>
+                        <td class="editable-cell conditional-column timepart-column">
+                            <select onchange="updateTeeTime('${teeTime.id}', 'time_part', this.value)"
+                                    onkeydown="handleKeyDown(event, this)">
+                                <option value="1부" ${teeTime.time_part === '1부' ? 'selected' : ''}>1부</option>
+                                <option value="2부" ${teeTime.time_part === '2부' ? 'selected' : ''}>2부</option>
+                                <option value="3부" ${teeTime.time_part === '3부' ? 'selected' : ''}>3부</option>
+                            </select>
+                        </td>
+                        <td class="editable-cell">
+                            <input type="number" value="${teeTime.green_fee || ''}" step="0.1"
+                                   onchange="updateTeeTime('${teeTime.id}', 'green_fee', this.value)"
+                                   onkeydown="handleKeyDown(event, this)">
+                        </td>
+                        <td class="editable-cell">
+                            <input type="number" value="${teeTime.players || ''}" min="1" max="4"
+                                   onchange="updateTeeTime('${teeTime.id}', 'players', this.value); updateBookingType('${teeTime.id}', this.value)"
+                                   onkeydown="handleKeyDown(event, this)">
+                        </td>
+                        <td class="editable-cell">
+                            <select onchange="updateTeeTime('${teeTime.id}', 'booking_type', this.value)"
+                                    onkeydown="handleKeyDown(event, this)">
+                                <option value="부킹" ${teeTime.booking_type === '부킹' ? 'selected' : ''}>부킹</option>
+                                <option value="조인" ${teeTime.booking_type === '조인' ? 'selected' : ''}>조인</option>
+                            </select>
+                        </td>
+                        <td class="editable-cell">
+                            <input type="text" value="${teeTime.request || ''}" 
+                                   onchange="updateTeeTime('${teeTime.id}', 'request', this.value)"
+                                   onkeydown="handleKeyDown(event, this)">
+                        </td>
+                        <td class="editable-cell">
+                            <select onchange="updateTeeTime('${teeTime.id}', 'hole', this.value)"
+                                    onkeydown="handleKeyDown(event, this)">
+                                <option value="18홀" ${teeTime.hole === '18홀' ? 'selected' : ''}>18홀</option>
+                                <option value="9홀" ${teeTime.hole === '9홀' ? 'selected' : ''}>9홀</option>
+                            </select>
+                        </td>
+                        <td class="checkbox-cell" onclick="toggleCheckbox('${teeTime.id}', 'caddy')" onkeydown="handleKeyDown(event, this)">
+                            <input type="checkbox" ${teeTime.caddy === '포함' ? 'checked' : ''} 
+                                   onchange="updateTeeTime('${teeTime.id}', 'caddy', this.checked ? '포함' : '미포함')">
+                        </td>
+                        <td class="editable-cell">
+                            <input type="number" value="${teeTime.prepay || ''}" step="0.1"
+                                   onchange="updateTeeTime('${teeTime.id}', 'prepay', this.value)"
+                                   onkeydown="handleKeyDown(event, this)">
+                        </td>
+                        <td class="checkbox-cell" onclick="toggleCheckbox('${teeTime.id}', 'meal')" onkeydown="handleKeyDown(event, this)">
+                            <input type="checkbox" ${teeTime.meal === '포함' ? 'checked' : ''} 
+                                   onchange="updateTeeTime('${teeTime.id}', 'meal', this.checked ? '포함' : '미포함')">
+                        </td>
+                        <td class="checkbox-cell" onclick="toggleCheckbox('${teeTime.id}', 'cart')" onkeydown="handleKeyDown(event, this)">
+                            <input type="checkbox" ${teeTime.cart === '포함' ? 'checked' : ''} 
+                                   onchange="updateTeeTime('${teeTime.id}', 'cart', this.checked ? '포함' : '미포함')">
+                        </td>
+                        <td class="editable-cell">
+                            <input type="text" value="${teeTime.other || ''}" 
+                                   onchange="updateTeeTime('${teeTime.id}', 'other', this.value)"
+                                   onkeydown="handleKeyDown(event, this)">
+                        </td>
+                        <td>
+                            <select onchange="updateTeeTime('${teeTime.id}', 'status', this.value)"
+                                    onkeydown="handleKeyDown(event, this)">
+                                <option value="AVAILABLE" ${teeTime.status === 'AVAILABLE' ? 'selected' : ''}>예약가능</option>
+                                <option value="RESERVED" ${teeTime.status === 'RESERVED' ? 'selected' : ''}>예약중</option>
+                                <option value="CONFIRMED" ${teeTime.status === 'CONFIRMED' ? 'selected' : ''}>예약확정</option>
+                                <option value="COMPLETED" ${teeTime.status === 'COMPLETED' ? 'selected' : ''}>완료</option>
+                                <option value="CANCELLED" ${teeTime.status === 'CANCELLED' ? 'selected' : ''}>취소</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-edit" onclick="enableEdit('${teeTime.id}')" title="수정" style="display: inline-block;">✏️</button>
+                                <button class="btn btn-success" onclick="saveTeeTime('${teeTime.id}')" title="저장" style="display: none;">💾</button>
+                                <button class="btn-cancel" onclick="cancelEdit('${teeTime.id}')" title="취소" style="display: none;">❌</button>
+                                <button class="btn btn-danger" onclick="deleteTeeTime('${teeTime.id}')" title="삭제">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // select 요소들의 값 설정
+            filteredTeeTimes.forEach(teeTime => {
+                const row = document.querySelector(`tr[data-id="${teeTime.id}"]`);
+                if (row) {
+                    const golfCourseSelect = row.querySelector('select[onchange*="golf_course_name"]');
+                    if (golfCourseSelect && teeTime.golf_course_name) {
+                        golfCourseSelect.value = teeTime.golf_course_name;
+                    }
+                }
+            });
+            
+            // 모든 행을 초기 읽기 전용 모드로 설정 (상태 필드 제외)
+            setAllRowsReadOnly();
+            
+            // URL 파라미터에 따른 컬럼 숨김 처리
+            hideConditionalColumns();
+
+            // 페이지 제목 업데이트
+            updatePageTitle();
+        }
+
+        // 모든 행을 읽기 전용 모드로 설정 (상태 필드 제외)
+        function setAllRowsReadOnly() {
+            const rows = document.querySelectorAll('#tee-time-tbody tr');
+            rows.forEach(row => {
+                const editableCells = row.querySelectorAll('.editable-cell');
+                editableCells.forEach(cell => {
+                    cell.classList.remove('edit-mode');
+                    const inputs = cell.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        // 상태 필드가 아닌 경우에만 읽기 전용으로 설정
+                        if (!input.hasAttribute('onchange') || !input.getAttribute('onchange').includes('status')) {
+                            input.disabled = true;
+                        }
+                    });
+                });
+                row.classList.remove('row-edit-mode');
             });
         }
 
-        // 페이지 헤더 업데이트
-        function updatePageHeader(params, dataCount) {
-            const title = document.getElementById('page-title');
-            const info = document.getElementById('page-info');
+        // 특정 행의 편집 모드 활성화
+        function enableEdit(teeTimeId) {
+            const row = document.querySelector(`tr[data-id="${teeTimeId}"]`);
+            if (!row) return;
+
+            // 다른 모든 행을 읽기 전용으로 설정
+            setAllRowsReadOnly();
+
+            // 해당 행을 편집 모드로 설정
+            const editableCells = row.querySelectorAll('.editable-cell');
+            editableCells.forEach(cell => {
+                cell.classList.add('edit-mode');
+                const inputs = cell.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    input.disabled = false;
+                });
+            });
             
-            let titleText = '티타임 목록';
-            let infoText = '';
+            row.classList.add('row-edit-mode');
+
+            // 버튼 표시 상태 변경
+            const actionButtons = row.querySelector('.action-buttons');
+            actionButtons.querySelector('.btn-edit').style.display = 'none';
+            actionButtons.querySelector('.btn-success').style.display = 'inline-block';
+            actionButtons.querySelector('.btn-cancel').style.display = 'inline-block';
+        }
+
+        // 편집 취소
+        function cancelEdit(teeTimeId) {
+            const row = document.querySelector(`tr[data-id="${teeTimeId}"]`);
+            if (!row) return;
+
+            // 행을 읽기 전용 모드로 되돌림
+            const editableCells = row.querySelectorAll('.editable-cell');
+            editableCells.forEach(cell => {
+                cell.classList.remove('edit-mode');
+                const inputs = cell.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    // 상태 필드가 아닌 경우에만 읽기 전용으로 설정
+                    if (!input.hasAttribute('onchange') || !input.getAttribute('onchange').includes('status')) {
+                        input.disabled = true;
+                    }
+                });
+            });
             
-            if (params.golfCourse) {
-                titleText = `${params.golfCourse} 티타임`;
-                infoText += params.golfCourse;
+            row.classList.remove('row-edit-mode');
+
+            // 버튼 표시 상태 변경
+            const actionButtons = row.querySelector('.action-buttons');
+            actionButtons.querySelector('.btn-edit').style.display = 'inline-block';
+            actionButtons.querySelector('.btn-success').style.display = 'none';
+            actionButtons.querySelector('.btn-cancel').style.display = 'none';
+
+            // 데이터 다시 로드하여 원래 값으로 복원
+            loadTeeTimes();
+        }
+
+        // 페이지 제목 업데이트
+        function updatePageTitle() {
+            const params = getURLParams();
+            const titleElement = document.getElementById('page-title');
+            const infoElement = document.getElementById('page-info');
+            const tableTitle = document.getElementById('table-title');
+
+            let title = '티타임 관리';
+            let info = '엑셀 방식으로 티타임을 편집하고 관리하세요';
+            
+            if (params.golfCourse && params.date && params.timePart) {
+                title = `${params.golfCourse} - ${params.date} ${params.timePart}`;
+                info = `${params.golfCourse} ${params.date} ${params.timePart} ${params.type === 'booking' ? '부킹' : '조인'} 목록`;
+                tableTitle.textContent = `${params.golfCourse} ${params.timePart} 티타임 (${filteredTeeTimes.length}개)`;
+            } else {
+                tableTitle.textContent = `티타임 목록 (${filteredTeeTimes.length}개)`;
             }
-            
-            if (params.date) {
-                infoText += params.date ? ` | ${params.date}` : '';
-            }
-            
-            if (params.timePart) {
-                infoText += ` | ${params.timePart}`;
-            }
-            
-            infoText += ` | 총 ${dataCount}개`;
-            
-            title.textContent = titleText;
-            info.textContent = infoText;
+
+            titleElement.textContent = title;
+            infoElement.textContent = info;
         }
 
         // 통계 업데이트
-        function updateStats(data) {
-            const totalCount = data.length;
-            const bookingCount = data.filter(t => parseInt(t.players) >= 4).length;
+        function updateStats() {
+            const totalCount = filteredTeeTimes.length;
+            const bookingCount = filteredTeeTimes.filter(t => (parseInt(t.players) || 0) >= 4).length;
             const joinCount = totalCount - bookingCount;
             
-            const totalFee = data.reduce((sum, t) => sum + (parseFloat(t.greenFee) || 0), 0);
+            const totalFee = filteredTeeTimes.reduce((sum, t) => sum + (parseFloat(t.green_fee) || 0), 0);
             const avgFee = totalCount > 0 ? (totalFee / totalCount).toFixed(1) : 0;
             
             document.getElementById('total-count').textContent = totalCount;
@@ -402,160 +814,387 @@
             document.getElementById('avg-fee').textContent = avgFee;
         }
 
-        // 시간 포맷팅
-        function formatTime(timeStr) {
-            if (!timeStr) return timeStr;
-            // HH:MM:SS 형식을 HH:MM으로 변환
-            if (timeStr.includes(':')) {
-                return timeStr.substring(0, 5);
+        // 키보드 네비게이션
+        function handleKeyDown(e, input) {
+            switch (e.key) {
+                case 'Tab':
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        focusPreviousField(input);
+                    } else {
+                        focusNextField(input);
+                    }
+                    break;
+                case ' ': // Space
+                    if (input.type === 'checkbox' || input.closest('.checkbox-cell')) {
+                        e.preventDefault();
+                        input.click();
+                    } else if (input.tagName === 'SELECT') {
+                        e.preventDefault();
+                        const currentIndex = input.selectedIndex;
+                        const nextIndex = (currentIndex + 1) % input.options.length;
+                        input.selectedIndex = nextIndex;
+                        input.dispatchEvent(new Event('change'));
+                    }
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    const row = input.closest('tr');
+                    if (row) {
+                        const id = row.getAttribute('data-id');
+                        saveTeeTime(id);
+                    }
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    input.blur();
+                    break;
+                case 'Delete':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        const row = input.closest('tr');
+                        if (row) {
+                            const id = row.getAttribute('data-id');
+                            deleteTeeTime(id);
+                        }
+                    }
+                    break;
             }
-            // HHMM 형식을 HH:MM으로 변환
-            if (timeStr.length >= 4) {
-                const hour = timeStr.substring(0, 2);
-                const minute = timeStr.substring(2, 4);
-                return `${hour}:${minute}`;
-            }
-            return timeStr;
         }
 
-        // 테이블 생성
-        function createTeeTimeTable(data) {
-            const tbody = document.getElementById('tee-time-tbody');
-            const emptyState = document.getElementById('empty-state');
+        // 다음 필드로 포커스
+        function focusNextField(currentInput) {
+            const row = currentInput.closest('tr');
+            const allInputs = Array.from(row.querySelectorAll('input, select'));
+            const currentIndex = allInputs.indexOf(currentInput);
             
-            if (data.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
+            if (currentIndex < allInputs.length - 1) {
+                allInputs[currentIndex + 1].focus();
+                if (allInputs[currentIndex + 1].select) {
+                    allInputs[currentIndex + 1].select();
+                }
             }
+        }
+
+        // 이전 필드로 포커스
+        function focusPreviousField(currentInput) {
+            const row = currentInput.closest('tr');
+            const allInputs = Array.from(row.querySelectorAll('input, select'));
+            const currentIndex = allInputs.indexOf(currentInput);
             
-            emptyState.style.display = 'none';
+            if (currentIndex > 0) {
+                allInputs[currentIndex - 1].focus();
+                if (allInputs[currentIndex - 1].select) {
+                    allInputs[currentIndex - 1].select();
+                }
+            }
+        }
+
+        // 티타임 업데이트
+        function updateTeeTime(id, field, value) {
+            const teeTime = teeTimes.find(t => t.id == id);
+            if (teeTime) {
+                teeTime[field] = value;
+                
+                // 필터된 목록도 업데이트
+                const filteredTeeTime = filteredTeeTimes.find(t => t.id == id);
+                if (filteredTeeTime) {
+                    filteredTeeTime[field] = value;
+                }
+                
+                updateStats();
+            }
+        }
+
+        // 지역 자동 업데이트
+        function updateRegion(id, golfCourseName) {
+            const region = getRegionByGolfCourse(golfCourseName);
+            if (region) {
+                updateTeeTime(id, 'region', region);
+                
+                // UI 업데이트
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) {
+                    const regionInput = row.querySelector('input[onchange*="region"]');
+                    if (regionInput) {
+                        regionInput.value = region;
+                    }
+                }
+            }
+        }
+
+        // 시간대 자동 업데이트
+        function updateTimePart(id, time) {
+            const timePart = getTimePart(time);
+            if (timePart) {
+                updateTeeTime(id, 'time_part', timePart);
+                
+                // UI 업데이트
+                const row = document.querySelector(`tr[data-id="${id}"]`);
+                if (row) {
+                    const timePartSelect = row.querySelector('select[onchange*="time_part"]');
+                    if (timePartSelect) {
+                        timePartSelect.value = timePart;
+                    }
+                }
+            }
+        }
+
+        // 예약타입 자동 업데이트
+        function updateBookingType(id, players) {
+            const bookingType = getBookingType(players);
+            updateTeeTime(id, 'booking_type', bookingType);
             
-            // 시간순 정렬
-            data.sort((a, b) => {
-                const timeA = parseInt(a.time) || 0;
-                const timeB = parseInt(b.time) || 0;
-                return timeA - timeB;
+            // UI 업데이트
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            if (row) {
+                const bookingTypeSelect = row.querySelector('select[onchange*="booking_type"]');
+                if (bookingTypeSelect) {
+                    bookingTypeSelect.value = bookingType;
+                }
+            }
+        }
+
+        // 체크박스 토글
+        function toggleCheckbox(id, field) {
+            const teeTime = teeTimes.find(t => t.id == id);
+            if (teeTime) {
+                const currentValue = teeTime[field];
+                const newValue = currentValue === '포함' ? '미포함' : '포함';
+                updateTeeTime(id, field, newValue);
+            }
+        }
+
+        // 전체 선택/해제
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const rowSelects = document.querySelectorAll('.row-select');
+            
+            rowSelects.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
             });
-            
-            tbody.innerHTML = data.map(teeTime => {
-                const players = parseInt(teeTime.players) || 0;
-                const isBooking = players >= 4;
-                const timePart = teeTime.timePart || getTimePart(teeTime.time);
-                
-                // 그린피 포맷팅 (소수점 제거 후 만원 단위로 표시)
-                const greenFee = teeTime.greenFee ? Math.round(parseFloat(teeTime.greenFee) / 10000) : '-';
-                const prepay = teeTime.prepay ? Math.round(parseFloat(teeTime.prepay) / 10000) : '-';
-                
-                return `
-                    <tr>
-                        <td>
-                            <span class="time-badge">${formatTime(teeTime.time)}</span>
-                            <br><small>${timePart}</small>
-                        </td>
-                        <td><strong>${teeTime.golfCourse || '-'}</strong></td>
-                        <td>${teeTime.date || '-'}</td>
-                        <td class="green-fee">${greenFee}만원</td>
-                        <td>
-                            <span class="players-badge ${isBooking ? '' : 'join'}">${players}명</span>
-                        </td>
-                        <td>${teeTime.request || '-'}</td>
-                        <td>${teeTime.hole || '-'}</td>
-                        <td>${teeTime.caddy || '-'}</td>
-                        <td>${prepay}만원</td>
-                        <td>${teeTime.meal || '-'}</td>
-                        <td>${teeTime.cart || '-'}</td>
-                        <td>${teeTime.other || '-'}</td>
-                        <td>
-                            <button onclick="editTeeTime(${teeTime.id})" style="padding: 4px 8px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">수정</button>
-                            <button onclick="deleteTeeTime(${teeTime.id})" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 4px;">삭제</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
         }
 
-        // 페이지 초기화
-        async function initializePage() {
-            console.log('🏌️ 티타임 목록 페이지 초기화 시작');
+        // 선택된 항목 삭제
+        async function deleteSelected() {
+            const selectedCheckboxes = document.querySelectorAll('.row-select:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
             
-            // URL 파라미터 가져오기
-            const params = getURLParams();
-            console.log('📋 URL 파라미터:', params);
-            
-            // PostgreSQL API에서 티타임 데이터 로드
-            let allData = [];
-            try {
-                console.log('🔄 PostgreSQL API에서 티타임 데이터 로드 중...');
-                
-                // API URL 구성 (URL 파라미터 기반)
-                const apiUrl = new URL('http://localhost:3001/api/tee-times');
-                if (params.golfCourse) apiUrl.searchParams.append('golfCourse', params.golfCourse);
-                if (params.region) apiUrl.searchParams.append('region', params.region);
-                if (params.date) apiUrl.searchParams.append('date', params.date);
-                if (params.timePart) apiUrl.searchParams.append('timePart', params.timePart);
-                if (params.type && params.type !== 'all') apiUrl.searchParams.append('type', params.type);
-                
-                console.log('📡 API 호출:', apiUrl.toString());
-                
-                const response = await fetch(apiUrl.toString());
-                if (response.ok) {
-                    const apiResult = await response.json();
-                    // API 데이터 정규화 (snake_case -> camelCase)
-                    allData = normalizeApiData(apiResult.data || []);
-                    console.log('✅ PostgreSQL 데이터 로드 완료:', allData.length + '개');
-                } else {
-                    console.log('⚠️ API 호출 실패, localStorage 데이터 사용');
-                    allData = loadTeeTimeData();
-                }
-            } catch (error) {
-                console.error('❌ API 호출 오류:', error);
-                console.log('⚠️ localStorage 데이터 사용');
-                allData = loadTeeTimeData();
-            }
-            
-            console.log('📂 전체 데이터:', allData.length + '개');
-            
-            // PostgreSQL 데이터는 이미 필터링되어 있으므로 그대로 사용
-            const filteredData = allData;
-            console.log('🔍 필터링된 데이터:', filteredData.length + '개');
-            
-            // 페이지 업데이트
-            updatePageHeader(params, filteredData.length);
-            updateStats(filteredData);
-            createTeeTimeTable(filteredData);
-            
-            console.log('✅ 티타임 목록 페이지 초기화 완료');
-        }
-
-        // 티타임 수정 함수
-        function editTeeTime(id) {
-            // 수정 페이지로 이동 (tee-time-details.html에 id 전달)
-            window.location.href = `tee-time-details.html?id=${id}&mode=edit`;
-        }
-
-        // 티타임 삭제 함수
-        async function deleteTeeTime(id) {
-            if (!confirm('정말로 이 티타임을 삭제하시겠습니까?')) {
+            if (selectedIds.length === 0) {
+                alert('삭제할 티타임을 선택해주세요.');
                 return;
             }
-
+            
+            if (!confirm(`선택된 ${selectedIds.length}개의 티타임을 삭제하시겠습니까?`)) {
+                return;
+            }
+            
             try {
-                const response = await fetch(`http://localhost:3001/api/tee-times/${id}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    alert('티타임이 삭제되었습니다.');
-                    // 페이지 새로고침
-                    initializePage();
-                } else {
-                    alert('삭제 중 오류가 발생했습니다.');
+                for (const id of selectedIds) {
+                    if (!id.startsWith('new_')) {
+                        await fetch(`http://localhost:3001/api/tee-times/${id}`, {
+                            method: 'DELETE'
+                        });
+                    }
                 }
+                
+                // 로컬 데이터에서 제거
+                selectedIds.forEach(id => {
+                    const teeTimeIndex = teeTimes.findIndex(t => t.id == id);
+                    if (teeTimeIndex > -1) {
+                        teeTimes.splice(teeTimeIndex, 1);
+                    }
+                    
+                    const filteredIndex = filteredTeeTimes.findIndex(t => t.id == id);
+                    if (filteredIndex > -1) {
+                        filteredTeeTimes.splice(filteredIndex, 1);
+                    }
+                });
+                
+                renderTable();
+                updateStats();
+                alert(`${selectedIds.length}개의 티타임이 삭제되었습니다.`);
+                
             } catch (error) {
                 console.error('삭제 실패:', error);
                 alert('삭제 중 오류가 발생했습니다.');
             }
+        }
+
+        // 개별 티타임 저장
+        async function saveTeeTime(id) {
+            const teeTime = teeTimes.find(t => t.id == id);
+            if (!teeTime) return;
+
+            try {
+                const payload = {
+                    golf_course_name: teeTime.golf_course_name,
+                    region: teeTime.region,
+                    date: teeTime.date,
+                    time: teeTime.time,
+                    time_part: teeTime.time_part,
+                    green_fee: parseFloat(teeTime.green_fee) || 0,
+                    players: parseInt(teeTime.players) || 1,
+                    booking_type: teeTime.booking_type,
+                    request: teeTime.request,
+                    hole: teeTime.hole,
+                    caddy: teeTime.caddy,
+                    prepay: parseFloat(teeTime.prepay) || 0,
+                    meal: teeTime.meal,
+                    cart: teeTime.cart,
+                    other: teeTime.other,
+                    status: teeTime.status
+                };
+
+                let response;
+                if (teeTime.isNew || id.toString().startsWith('new_')) {
+                    // 새로 추가
+                    response = await fetch('http://localhost:3001/api/tee-times', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    // 기존 수정
+                    response = await fetch(`http://localhost:3001/api/tee-times/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ 저장 성공:', result);
+                    
+                    // 새 항목인 경우 ID 업데이트
+                    if (teeTime.isNew && result.data) {
+                        teeTime.id = result.data.id;
+                        delete teeTime.isNew;
+                        
+                        // 테이블 row의 data-id 업데이트
+                        const row = document.querySelector(`tr[data-id="${id}"]`);
+                        if (row) {
+                            row.setAttribute('data-id', result.data.id);
+                        }
+                    }
+                    
+                    // 성공 표시 (임시 스타일 변경)
+                    const row = document.querySelector(`tr[data-id="${teeTime.id}"]`);
+                    if (row) {
+                        row.style.backgroundColor = '#d4edda';
+                        setTimeout(() => {
+                            row.style.backgroundColor = '';
+                        }, 1000);
+                    }
+
+                    // 저장 후 편집 모드 종료하고 읽기 전용으로 돌아가기
+                    cancelEdit(teeTime.id);
+                    
+                } else {
+                    console.error('❌ 저장 실패:', response.status);
+                    alert('저장 중 오류가 발생했습니다.');
+                }
+            } catch (error) {
+                console.error('❌ 저장 실패:', error);
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 모든 변경사항 저장
+        async function saveAllChanges() {
+            if (!confirm('모든 변경사항을 저장하시겠습니까?')) {
+                return;
+            }
+
+            const savePromises = teeTimes.map(teeTime => saveTeeTime(teeTime.id));
+            
+            try {
+                await Promise.all(savePromises);
+                alert('모든 변경사항이 저장되었습니다.');
+            } catch (error) {
+                console.error('일괄 저장 실패:', error);
+                alert('일부 항목 저장에 실패했습니다.');
+            }
+        }
+
+        // 개별 티타임 삭제
+        async function deleteTeeTime(id) {
+            if (!confirm('이 티타임을 삭제하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                if (!id.toString().startsWith('new_')) {
+                    const response = await fetch(`http://localhost:3001/api/tee-times/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('삭제 실패');
+                    }
+                }
+
+                // 로컬 데이터에서 제거
+                const teeTimeIndex = teeTimes.findIndex(t => t.id == id);
+                if (teeTimeIndex > -1) {
+                    teeTimes.splice(teeTimeIndex, 1);
+                }
+                
+                const filteredIndex = filteredTeeTimes.findIndex(t => t.id == id);
+                if (filteredIndex > -1) {
+                    filteredTeeTimes.splice(filteredIndex, 1);
+                }
+
+                renderTable();
+                updateStats();
+                console.log('✅ 삭제 완료');
+
+            } catch (error) {
+                console.error('❌ 삭제 실패:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        // URL 파라미터에 따른 컬럼 숨김 처리
+        function hideConditionalColumns() {
+            const params = getURLParams();
+            
+            // 특정 골프장으로 필터링된 경우 골프장, 지역 컬럼 숨김
+            if (params.golfCourse) {
+                document.querySelectorAll('.golf-course-column, .region-column').forEach(col => {
+                    col.style.display = 'none';
+                });
+            }
+            
+            // 특정 날짜로 필터링된 경우 날짜 컬럼 숨김
+            if (params.date) {
+                document.querySelectorAll('.date-column').forEach(col => {
+                    col.style.display = 'none';
+                });
+            }
+            
+            // 특정 시간대로 필터링된 경우 시간대 컬럼 숨김
+            if (params.timePart) {
+                document.querySelectorAll('.timepart-column').forEach(col => {
+                    col.style.display = 'none';
+                });
+            }
+        }
+        
+        // 페이지 초기화
+        async function initializePage() {
+            console.log('🏌️ 티타임 목록 페이지 초기화 시작');
+            
+            // 데이터 로드
+            await loadGolfCourses();
+            await loadTeeTimeData();
+            
+            // UI 렌더링
+            renderTable();
+            updateStats();
+            
+            console.log('✅ 티타임 목록 페이지 초기화 완료');
         }
 
         // 페이지 로드시 실행

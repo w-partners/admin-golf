@@ -192,9 +192,25 @@ const server = http.createServer(async (req, res) => {
         paramIndex++;
       }
 
-      // 예약 타입 필터
+      // 예약 타입 필터 (4가지 타입 지원)
       if (query.type && query.type !== 'all') {
-        const typeFilter = query.type === 'booking' ? '부킹' : '조인';
+        let typeFilter;
+        switch (query.type) {
+          case 'booking':
+            typeFilter = '부킹';
+            break;
+          case 'join':
+            typeFilter = '조인';
+            break;
+          case 'daily':
+            typeFilter = '데일리';
+            break;
+          case 'package':
+            typeFilter = '패키지';
+            break;
+          default:
+            typeFilter = '조인'; // 기본값
+        }
         sqlQuery += ` AND booking_type = $${paramIndex}`;
         params.push(typeFilter);
         paramIndex++;
@@ -274,26 +290,88 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // 티타임 매트릭스 API (실시간 DB 조회)
+    // 티타임 수정 API
+    if (pathname.startsWith('/api/tee-times/') && method === 'PUT') {
+      const teeTimeId = pathname.split('/')[3];
+      const teeTimeData = await getPostData(req);
+      
+      // 시간대 자동 분류
+      function getTimePart(time) {
+        if (!time) return '1부';
+        const hour = parseInt(time.substring(0, 2)) || 0;
+        if (hour < 10) return '1부';
+        else if (hour >= 15) return '3부';
+        else return '2부';
+      }
+      
+      // 예약 타입 자동 결정
+      function getBookingType(players) {
+        return parseInt(players) >= 4 ? '부킹' : '조인';
+      }
+
+      const result = await db.query(`
+        UPDATE tee_times SET
+          golf_course_name = $1, region = $2, date = $3, time = $4, time_part = $5,
+          green_fee = $6, players = $7, booking_type = $8, request = $9, hole = $10,
+          caddy = $11, prepay = $12, meal = $13, cart = $14, other = $15, status = $16
+        WHERE id = $17
+        RETURNING *
+      `, [
+        teeTimeData.golf_course_name,
+        teeTimeData.region,
+        teeTimeData.date,
+        teeTimeData.time,
+        getTimePart(teeTimeData.time),
+        parseFloat(teeTimeData.green_fee) || 0,
+        parseInt(teeTimeData.players) || 1,
+        getBookingType(teeTimeData.players),
+        teeTimeData.request || '',
+        teeTimeData.hole || '',
+        teeTimeData.caddy || '',
+        parseFloat(teeTimeData.prepay) || 0,
+        teeTimeData.meal || '',
+        teeTimeData.cart || '',
+        teeTimeData.other || '',
+        teeTimeData.status || 'AVAILABLE',
+        teeTimeId
+      ]);
+
+      if (result.rows.length === 0) {
+        res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: '티타임을 찾을 수 없습니다' }));
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({
+        success: true,
+        data: result.rows[0]
+      }));
+
+      console.log(`✏️ 티타임 수정: ${teeTimeData.golf_course_name} (ID: ${teeTimeId})`);
+      return;
+    }
+
+    // 티타임 매트릭스 API (실시간 DB 조회 - 4가지 타입 구분)
     if (pathname === '/api/tee-time-matrix' && method === 'GET') {
       console.log('🔄 실시간 티타임 매트릭스 조회 중...');
 
       // 1. 모든 골프장 조회
       const coursesResult = await db.query('SELECT * FROM golf_courses ORDER BY region, sequence');
       
-      // 2. 모든 티타임 조회하여 카운트 계산
+      // 2. 모든 티타임을 예약 타입별로 조회하여 카운트 계산
       const teeTimesResult = await db.query(`
-        SELECT golf_course_name, region, DATE(date)::text as date_only, time_part, COUNT(*) as count
+        SELECT golf_course_name, region, DATE(date)::text as date_only, time_part, booking_type, COUNT(*) as count
         FROM tee_times 
-        GROUP BY golf_course_name, region, DATE(date), time_part
+        GROUP BY golf_course_name, region, DATE(date), time_part, booking_type
       `);
 
-      console.log('🔍 매트릭스 집계 데이터:');
+      console.log('🔍 매트릭스 집계 데이터 (예약 타입별):');
       teeTimesResult.rows.forEach(row => {
-        console.log(`  - ${row.region}/${row.golf_course_name} ${row.date_only} ${row.time_part}: ${row.count}건`);
+        console.log(`  - ${row.region}/${row.golf_course_name} ${row.date_only} ${row.time_part} [${row.booking_type}]: ${row.count}건`);
       });
 
-      // 3. 매트릭스 데이터 구조 생성 (90일치)
+      // 3. 매트릭스 데이터 구조 생성 (90일치, 4가지 예약타입별)
       const matrix = {};
       const startDate = new Date();
       
@@ -305,32 +383,45 @@ const server = http.createServer(async (req, res) => {
           dates: {}
         };
 
-        // 90일치 날짜 초기화
+        // 90일치 날짜 초기화 (4가지 예약타입 x 3개 시간대)
         for (let i = 0; i < 90; i++) {
           const currentDate = new Date(startDate);
           currentDate.setDate(startDate.getDate() + i);
           const dateStr = currentDate.toISOString().split('T')[0];
           
           matrix[courseKey].dates[dateStr] = {
-            part1: 0,
-            part2: 0,
-            part3: 0
+            // 부킹 (4명)
+            부킹_part1: 0, 부킹_part2: 0, 부킹_part3: 0,
+            // 조인 (4명 미만)  
+            조인_part1: 0, 조인_part2: 0, 조인_part3: 0,
+            // 데일리 (당일)
+            데일리_part1: 0, 데일리_part2: 0, 데일리_part3: 0,
+            // 패키지 (숙박포함)
+            패키지_part1: 0, 패키지_part2: 0, 패키지_part3: 0
           };
         }
       });
 
-      // 4. 실제 티타임 카운트 적용
+      // 4. 실제 티타임 카운트 적용 (예약 타입별)
       teeTimesResult.rows.forEach(teeTime => {
         const courseKey = `${teeTime.region}_${teeTime.golf_course_name}`;
         const dateStr = teeTime.date_only; // PostgreSQL DATE() 함수로 이미 YYYY-MM-DD 형식
         
-        console.log(`🎯 매칭 시도: ${courseKey} - ${dateStr} - ${teeTime.time_part}`);
+        console.log(`🎯 매칭 시도: ${courseKey} - ${dateStr} - ${teeTime.time_part} - [${teeTime.booking_type}]`);
         
         if (matrix[courseKey] && matrix[courseKey].dates[dateStr]) {
+          // 예약 타입과 시간대 조합으로 키 생성
+          const bookingTypeKey = teeTime.booking_type || '조인'; // 기본값은 조인
           const partKey = teeTime.time_part === '1부' ? 'part1' : 
                          teeTime.time_part === '2부' ? 'part2' : 'part3';
-          matrix[courseKey].dates[dateStr][partKey] = parseInt(teeTime.count);
-          console.log(`✅ 매칭 성공: ${courseKey}.${dateStr}.${partKey} = ${teeTime.count}`);
+          const matrixKey = `${bookingTypeKey}_${partKey}`;
+          
+          if (matrix[courseKey].dates[dateStr].hasOwnProperty(matrixKey)) {
+            matrix[courseKey].dates[dateStr][matrixKey] = parseInt(teeTime.count);
+            console.log(`✅ 매칭 성공: ${courseKey}.${dateStr}.${matrixKey} = ${teeTime.count}`);
+          } else {
+            console.log(`⚠️  알 수 없는 예약 타입: ${bookingTypeKey} (${matrixKey})`);
+          }
         } else {
           console.log(`❌ 매칭 실패: ${courseKey} not found or ${dateStr} not in range`);
         }
@@ -341,7 +432,7 @@ const server = http.createServer(async (req, res) => {
       
       const totalCourses = Object.keys(matrix).length;
       const totalTeeTimeCount = teeTimesResult.rows.reduce((sum, row) => sum + parseInt(row.count), 0);
-      console.log(`✅ 매트릭스 조회 완료: ${totalCourses}개 골프장, 총 ${totalTeeTimeCount}건 티타임`);
+      console.log(`✅ 매트릭스 조회 완료: ${totalCourses}개 골프장, 총 ${totalTeeTimeCount}건 티타임 (4가지 타입 구분)`);
       return;
     }
 
