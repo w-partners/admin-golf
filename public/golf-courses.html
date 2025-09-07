@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<!-- ================================================================ -->
+<!-- 파일: golf-courses.html (골프장 리스트 페이지) -->
+<!-- 설명: 등록된 골프장 리스트 보기 및 관리 -->
+<!-- 기능: 골프장 리스트, 검색/필터, 수정/삭제 -->
+<!-- ================================================================ -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골프장 관리 - 골프장 예약 관리 시스템</title>
+    <!-- ============ CSS 스타일 섹션 시작 ============ -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        /* Global Header */
+        .global-header {
+            background: linear-gradient(135deg, #2c5282 0%, #2b6cb0 100%);
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-profile {
+            font-size: 14px;
+        }
+
+        .btn-header {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-header:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Quick Menu */
+        .quick-menu {
+            background: white;
+            padding: 12px 24px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+        }
+
+        .menu-item {
+            white-space: nowrap;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: #e9ecef;
+        }
+
+        .menu-item.active {
+            background: #007bff;
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-info {
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Search and Filter */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .filter-input,
+        .filter-select {
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Table Container */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .table-count {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .table-scroll {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-api {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-manual {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-waiting {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        /* Inline Editing */
+        .editable-cell {
+            position: relative;
+            cursor: pointer;
+            padding: 8px 12px !important;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .editable-cell:hover {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .editable-cell.editing {
+            background: white;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .inline-input, .inline-select {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            padding: 4px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .edit-controls {
+            position: absolute;
+            top: -30px;
+            right: 0;
+            display: none;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .editable-cell.editing .edit-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .edit-btn {
+            padding: 2px 6px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .edit-btn.save {
+            background: #10b981;
+            color: white;
+        }
+
+        .edit-btn.cancel {
+            background: #ef4444;
+            color: white;
+        }
+
+        .status-cell {
+            position: relative;
+        }
+
+        .status-badge.editable {
+            cursor: pointer;
+        }
+
+        .status-badge.editable:hover {
+            opacity: 0.8;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #f0f9ff;
+            border-left-color: #10b981;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            border-left-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-header {
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 12px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-actions {
+                grid-column: 1 / -1;
+                justify-content: stretch;
+            }
+            
+            .filter-actions .btn {
+                flex: 1;
+            }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px 12px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+    <!-- ============ CSS 스타일 섹션 끝 ============ -->
+</head>
+<body>
+    <!-- ============ HTML BODY 섹션 시작 ============ -->
+    <!-- ============ 전역 헤더 섹션 ============ -->
+    <!-- Global Header -->
+    <div class="global-header">
+        <div class="header-left">
+            <div class="logo">🏌️</div>
+            <div class="company-name">골프장 예약 관리 시스템</div>
+        </div>
+        <div class="header-right">
+            <div class="user-profile">최고관리자 (01034424668)</div>
+            <button class="btn-header" onclick="location.href='index.html'">메인으로</button>
+        </div>
+    </div>
+
+    <!-- ============ 퀵 메뉴 섹션 ============ -->
+    <!-- Quick Menu -->
+    <div class="quick-menu">
+        <a href="index.html" class="menu-item">티타임:모두</a>
+        <a href="#" class="menu-item">티타임등록:매니저이상</a>
+        <a href="#" class="menu-item active">골프장리스트/등록:관리자이상</a>
+        <a href="#" class="menu-item">실적등록:매니저이상</a>
+        <a href="#" class="menu-item">회원관리:관리자이상</a>
+    </div>
+
+    <!-- ============ 메인 컨테이너 섹션 ============ -->
+    <!-- Main Container -->
+    <div class="container">
+        <!-- ============ 페이지 헤더 영역 ============ -->
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-info">
+                <div class="page-title">골프장 관리</div>
+                <div class="page-subtitle">등록된 골프장을 관리합니다. 골프장 정보를 조회, 수정, 삭제할 수 있습니다.</div>
+            </div>
+            <div class="page-actions">
+                <button class="btn btn-secondary" onclick="loadGolfCourses()">🔄 새로고침</button>
+                <a href="golf-course-register.html" class="btn btn-primary">➕ 골프장 등록</a>
+            </div>
+        </div>
+
+        <!-- ============ 알림 메시지 영역 ============ -->
+        <!-- Alert Messages -->
+        <div id="alert-container"></div>
+
+        <!-- ============ 검색/필터 섹션 ============ -->
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">골프장 검색</label>
+                    <input type="text" class="filter-input" id="searchName" placeholder="골프장명으로 검색">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">지역</label>
+                    <select class="filter-select" id="filterRegion">
+                        <option value="">전체 지역</option>
+                        <option value="경기북부">경기북부</option>
+                        <option value="경기남부">경기남부</option>
+                        <option value="경기동부">경기동부</option>
+                        <option value="강원">강원</option>
+                        <option value="경상">경상</option>
+                        <option value="충남">충남</option>
+                        <option value="전라">전라</option>
+                        <option value="제주">제주</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">운영상태</label>
+                    <select class="filter-select" id="filterStatus">
+                        <option value="">전체 상태</option>
+                        <option value="API연동">API연동</option>
+                        <option value="수동">수동</option>
+                        <option value="대기">대기</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-actions">
+                        <button class="btn btn-secondary" onclick="clearFilters()">초기화</button>
+                        <button class="btn btn-primary" onclick="applyFilters()">검색</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 골프장 리스트 테이블 컨테이너 ============ -->
+        <!-- Table Container -->
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-title">골프장 목록</div>
+                <div class="table-count" id="table-count">총 0개</div>
+            </div>
+
+            <!-- ============ 로딩 상태 표시 ============ -->
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div>골프장 목록을 불러오는 중...</div>
+            </div>
+
+            <!-- ============ 골프장 리스트 테이블 ============ -->
+            <!-- Table -->
+            <div class="table-scroll" id="table-scroll" style="display: none;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>순번</th>
+                            <th>지역</th>
+                            <th>골프장명</th>
+                            <th>주소</th>
+                            <th>연락처</th>
+                            <th>운영상태</th>
+                            <th>등록일</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="golf-courses-tbody">
+                        <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ============ 빈 상태 표시 ============ -->
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <div class="icon">🏌️</div>
+                <h3>등록된 골프장이 없습니다</h3>
+                <p>새로운 골프장을 등록하여 티타임 관리를 시작하세요.</p>
+                <a href="golf-course-register.html" class="btn btn-primary">첫 골프장 등록하기</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ 삭제 확인 모달 ============ -->
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">골프장 삭제 확인</div>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                정말로 이 골프장을 삭제하시겠습니까?
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">취소</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ JavaScript 섹션 시작 ============ -->
+    <script>
+        let currentGolfCourses = [];
+        let filteredGolfCourses = [];
+        let deleteTargetId = null;
+
+        // 페이지 로드시 골프장 목록 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGolfCourses();
+            
+            // 검색 입력시 실시간 필터링
+            document.getElementById('searchName').addEventListener('input', applyFilters);
+            document.getElementById('filterRegion').addEventListener('change', applyFilters);
+            document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        });
+
+        // 골프장 목록 불러오기
+        async function loadGolfCourses() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('http://localhost:3001/api/golf-courses');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const regionGroupedData = await response.json();
+                
+                // 지역별 그룹 데이터를 배열로 변환
+                currentGolfCourses = [];
+                Object.keys(regionGroupedData).forEach(region => {
+                    regionGroupedData[region].forEach(course => {
+                        course.region = region; // 지역 정보 추가
+                        currentGolfCourses.push(course);
+                    });
+                });
+                
+                filteredGolfCourses = [...currentGolfCourses];
+                
+                displayGolfCourses();
+                updateTableCount();
+                
+                showAlert('success', `골프장 ${currentGolfCourses.length}개를 불러왔습니다.`);
+                
+                // 3초 후 알림 자동 제거
+                setTimeout(clearAlert, 3000);
+                
+            } catch (error) {
+                console.error('골프장 목록 불러오기 실패:', error);
+                showAlert('error', `골프장 목록을 불러올 수 없습니다: ${error.message}`);
+                showEmptyState();
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 골프장 목록 표시
+        function displayGolfCourses() {
+            const tbody = document.getElementById('golf-courses-tbody');
+            
+            if (filteredGolfCourses.length === 0) {
+                showEmptyState();
+                return;
+            }
+            
+            showTable();
+            
+            tbody.innerHTML = filteredGolfCourses.map(course => `
+                <tr>
+                    <td>${course.sequence}</td>
+                    <td class="editable-cell" data-field="region" data-id="${course.id}" onclick="startEdit(this)">
+                        <div class="edit-controls">
+                            <button class="edit-btn save" onclick="saveEdit(this, event)">✓</button>
+                            <button class="edit-btn cancel" onclick="cancelEdit(this, event)">✕</button>
+                        </div>
+                        <span class="cell-content">${course.region}</span>
+                    </td>
+                    <td class="editable-cell" data-field="name" data-id="${course.id}" onclick="startEdit(this)">
+                        <div class="edit-controls">
+                            <button class="edit-btn save" onclick="saveEdit(this, event)">✓</button>
+                            <button class="edit-btn cancel" onclick="cancelEdit(this, event)">✕</button>
+                        </div>
+                        <span class="cell-content"><strong>${course.name}</strong></span>
+                    </td>
+                    <td class="editable-cell" data-field="address" data-id="${course.id}" onclick="startEdit(this)">
+                        <div class="edit-controls">
+                            <button class="edit-btn save" onclick="saveEdit(this, event)">✓</button>
+                            <button class="edit-btn cancel" onclick="cancelEdit(this, event)">✕</button>
+                        </div>
+                        <span class="cell-content">${course.address}</span>
+                    </td>
+                    <td class="editable-cell" data-field="contact" data-id="${course.id}" onclick="startEdit(this)">
+                        <div class="edit-controls">
+                            <button class="edit-btn save" onclick="saveEdit(this, event)">✓</button>
+                            <button class="edit-btn cancel" onclick="cancelEdit(this, event)">✕</button>
+                        </div>
+                        <span class="cell-content">${course.contact}</span>
+                    </td>
+                    <td class="editable-cell status-cell" data-field="status" data-id="${course.id}" onclick="startEdit(this)">
+                        <div class="edit-controls">
+                            <button class="edit-btn save" onclick="saveEdit(this, event)">✓</button>
+                            <button class="edit-btn cancel" onclick="cancelEdit(this, event)">✕</button>
+                        </div>
+                        <span class="status-badge ${getStatusClass(course.status)} editable">
+                            ${course.status}
+                        </span>
+                    </td>
+                    <td>${formatDate(course.created_at)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-secondary" onclick="editGolfCourse(${course.id})" title="수정">
+                                ✏️ 수정
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteGolfCourse(${course.id}, '${course.name}')" title="삭제">
+                                🗑️ 삭제
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 필터 적용
+        function applyFilters() {
+            const searchName = document.getElementById('searchName').value.trim().toLowerCase();
+            const filterRegion = document.getElementById('filterRegion').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            
+            filteredGolfCourses = currentGolfCourses.filter(course => {
+                const nameMatch = !searchName || course.name.toLowerCase().includes(searchName);
+                const regionMatch = !filterRegion || course.region === filterRegion;
+                const statusMatch = !filterStatus || course.status === filterStatus;
+                
+                return nameMatch && regionMatch && statusMatch;
+            });
+            
+            displayGolfCourses();
+            updateTableCount();
+        }
+
+        // 필터 초기화
+        function clearFilters() {
+            document.getElementById('searchName').value = '';
+            document.getElementById('filterRegion').value = '';
+            document.getElementById('filterStatus').value = '';
+            
+            filteredGolfCourses = [...currentGolfCourses];
+            displayGolfCourses();
+            updateTableCount();
+        }
+
+        // 골프장 수정
+        function editGolfCourse(id) {
+            location.href = `golf-course-edit.html?id=${id}`;
+        }
+
+        // 골프장 삭제 확인
+        function deleteGolfCourse(id, name) {
+            deleteTargetId = id;
+            document.getElementById('deleteModalBody').innerHTML = 
+                `<strong>"${name}"</strong> 골프장을 삭제하시겠습니까?<br><br>
+                <small style="color: #ef4444;">⚠️ 삭제된 골프장은 복구할 수 없습니다.</small>`;
+            
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        // 삭제 확인
+        async function confirmDelete() {
+            if (!deleteTargetId) return;
+            
+            try {
+                const response = await fetch(`http://localhost:3001/api/golf-courses/${deleteTargetId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '삭제 실패');
+                }
+                
+                showAlert('success', '골프장이 성공적으로 삭제되었습니다.');
+                closeDeleteModal();
+                loadGolfCourses(); // 목록 새로고침
+                
+            } catch (error) {
+                showAlert('error', `삭제 실패: ${error.message}`);
+                closeDeleteModal();
+            }
+        }
+
+        // 삭제 모달 닫기
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteTargetId = null;
+        }
+
+        // 유틸리티 함수들
+        function getStatusClass(status) {
+            switch(status) {
+                case 'API연동': return 'status-api';
+                case '수동': return 'status-manual';
+                case '대기': return 'status-waiting';
+                default: return 'status-waiting';
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR');
+        }
+
+        function updateTableCount() {
+            document.getElementById('table-count').textContent = 
+                `총 ${filteredGolfCourses.length}개${currentGolfCourses.length !== filteredGolfCourses.length ? ` (전체 ${currentGolfCourses.length}개)` : ''}`;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('table-scroll').style.display = show ? 'none' : 'block';
+            document.getElementById('empty-state').style.display = 'none';
+        }
+
+        function showTable() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('table-scroll').style.display = 'block';
+            document.getElementById('empty-state').style.display = 'none';
+        }
+
+        function showEmptyState() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('table-scroll').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'block';
+        }
+
+        function showAlert(type, message) {
+            const container = document.getElementById('alert-container');
+            const alertClass = `alert-${type}`;
+            
+            container.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearAlert() {
+            document.getElementById('alert-container').innerHTML = '';
+        }
+
+        // 인라인 편집 기능
+        let currentEditingCell = null;
+        let originalValue = null;
+
+        // 편집 시작
+        function startEdit(cell, event) {
+            if (event) event.stopPropagation();
+            
+            // 이미 편집중인 다른 셀이 있다면 취소
+            if (currentEditingCell && currentEditingCell !== cell) {
+                cancelEdit(currentEditingCell.querySelector('.edit-btn.cancel'), event);
+            }
+            
+            currentEditingCell = cell;
+            cell.classList.add('editing');
+            
+            const field = cell.dataset.field;
+            const contentSpan = cell.querySelector('.cell-content') || cell.querySelector('.status-badge');
+            originalValue = contentSpan.textContent.trim();
+            
+            let inputElement;
+            
+            if (field === 'region') {
+                // 지역 선택 드롭다운
+                inputElement = document.createElement('select');
+                inputElement.className = 'inline-select';
+                inputElement.innerHTML = `
+                    <option value="경기북부" ${originalValue === '경기북부' ? 'selected' : ''}>경기북부</option>
+                    <option value="경기남부" ${originalValue === '경기남부' ? 'selected' : ''}>경기남부</option>
+                    <option value="경기동부" ${originalValue === '경기동부' ? 'selected' : ''}>경기동부</option>
+                    <option value="강원" ${originalValue === '강원' ? 'selected' : ''}>강원</option>
+                    <option value="경상" ${originalValue === '경상' ? 'selected' : ''}>경상</option>
+                    <option value="충남" ${originalValue === '충남' ? 'selected' : ''}>충남</option>
+                    <option value="전라" ${originalValue === '전라' ? 'selected' : ''}>전라</option>
+                    <option value="제주" ${originalValue === '제주' ? 'selected' : ''}>제주</option>
+                `;
+            } else if (field === 'status') {
+                // 상태 선택 드롭다운
+                inputElement = document.createElement('select');
+                inputElement.className = 'inline-select';
+                inputElement.innerHTML = `
+                    <option value="API연동" ${originalValue === 'API연동' ? 'selected' : ''}>API연동</option>
+                    <option value="수동" ${originalValue === '수동' ? 'selected' : ''}>수동</option>
+                    <option value="대기" ${originalValue === '대기' ? 'selected' : ''}>대기</option>
+                `;
+            } else {
+                // 텍스트 입력
+                inputElement = document.createElement('input');
+                inputElement.type = 'text';
+                inputElement.className = 'inline-input';
+                inputElement.value = originalValue;
+            }
+            
+            // 기존 내용 숨기기
+            contentSpan.style.display = 'none';
+            
+            // 입력 요소 추가
+            cell.insertBefore(inputElement, cell.firstChild);
+            inputElement.focus();
+            
+            // Enter 키로 저장, Escape로 취소
+            inputElement.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    saveEdit(cell.querySelector('.edit-btn.save'), e);
+                } else if (e.key === 'Escape') {
+                    cancelEdit(cell.querySelector('.edit-btn.cancel'), e);
+                }
+            });
+        }
+
+        // 편집 저장
+        async function saveEdit(button, event) {
+            if (event) event.stopPropagation();
+            
+            if (!currentEditingCell) return;
+            
+            const cell = currentEditingCell;
+            const field = cell.dataset.field;
+            const id = cell.dataset.id;
+            
+            const inputElement = cell.querySelector('.inline-input') || cell.querySelector('.inline-select');
+            const newValue = inputElement.value.trim();
+            
+            if (!newValue) {
+                showAlert('error', '값을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                // API 호출로 업데이트
+                const updateData = { [field]: newValue };
+                const response = await fetch(`http://localhost:3001/api/golf-courses/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('업데이트 실패');
+                }
+                
+                // 성공시 화면 업데이트
+                const contentSpan = cell.querySelector('.cell-content') || cell.querySelector('.status-badge');
+                
+                if (field === 'name') {
+                    contentSpan.innerHTML = `<strong>${newValue}</strong>`;
+                } else if (field === 'status') {
+                    contentSpan.className = `status-badge ${getStatusClass(newValue)} editable`;
+                    contentSpan.textContent = newValue;
+                } else {
+                    contentSpan.textContent = newValue;
+                }
+                
+                // 로컬 데이터도 업데이트
+                const courseIndex = currentGolfCourses.findIndex(c => c.id == id);
+                if (courseIndex !== -1) {
+                    currentGolfCourses[courseIndex][field] = newValue;
+                }
+                
+                const filteredIndex = filteredGolfCourses.findIndex(c => c.id == id);
+                if (filteredIndex !== -1) {
+                    filteredGolfCourses[filteredIndex][field] = newValue;
+                }
+                
+                finishEdit();
+                showAlert('success', '수정이 완료되었습니다.');
+                setTimeout(clearAlert, 2000);
+                
+            } catch (error) {
+                showAlert('error', '수정 중 오류가 발생했습니다.');
+                setTimeout(clearAlert, 3000);
+            }
+        }
+
+        // 편집 취소
+        function cancelEdit(button, event) {
+            if (event) event.stopPropagation();
+            finishEdit();
+        }
+
+        // 편집 완료 처리
+        function finishEdit() {
+            if (!currentEditingCell) return;
+            
+            const cell = currentEditingCell;
+            const inputElement = cell.querySelector('.inline-input') || cell.querySelector('.inline-select');
+            const contentSpan = cell.querySelector('.cell-content') || cell.querySelector('.status-badge');
+            
+            // 입력 요소 제거
+            if (inputElement) {
+                inputElement.remove();
+            }
+            
+            // 기존 내용 다시 표시
+            contentSpan.style.display = '';
+            
+            // 편집 상태 해제
+            cell.classList.remove('editing');
+            currentEditingCell = null;
+            originalValue = null;
+        }
+
+        // 모달 외부 클릭시 닫기
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+
+        // 페이지 다른 곳 클릭시 편집 완료
+        document.addEventListener('click', function(e) {
+            if (currentEditingCell && !currentEditingCell.contains(e.target)) {
+                cancelEdit(null, null);
+            }
+        });
+    </script>
+    <!-- ============ JavaScript 섹션 끝 ============ -->
+</body>
+<!-- ============ HTML 문서 끝 ============ -->
+</html>

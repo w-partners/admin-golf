@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="ko">
+<!-- ================================================================ -->
+<!-- 파일: index.html (메인 페이지) -->
+<!-- 설명: 골프장 예약 관리 시스템의 메인 화면 -->
+<!-- 기능: 4개 탭 매트릭스 뷰 (데일리부킹/조인, 패키지부킹/조인) -->
+<!-- ================================================================ -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골프장 예약 관리 시스템</title>
+    <!-- ============ CSS 스타일 섹션 시작 ============ -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.4;
+        }
+
+        /* ============ 전역 헤더 스타일 ============ */
+        /* Global Header */
+        .global-header {
+            background: linear-gradient(135deg, #2c5282 0%, #2b6cb0 100%);
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .user-profile {
+            font-size: 14px;
+        }
+
+        .login-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .login-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* ============ 퀵 메뉴 스타일 ============ */
+        /* Quick Menu */
+        .quick-menu {
+            background: white;
+            padding: 12px 24px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+        }
+
+        .menu-item {
+            white-space: nowrap;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+            transition: all 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #e9ecef;
+        }
+
+        .menu-item.active {
+            background: #007bff;
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            padding: 20px 24px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* ============ 매트릭스 뷰 탭 스타일 ============ */
+        /* Matrix View Tabs */
+        .matrix-tabs {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #495057;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            background: #e9ecef;
+        }
+
+        .tab-button.active {
+            color: #007bff;
+            background: white;
+            border-bottom-color: #007bff;
+        }
+
+        /* ============ 매트릭스 테이블 컨테이너 스타일 ============ */
+        /* Matrix Table Container */
+        .matrix-container {
+            height: 600px;
+            overflow: auto;
+            background: white;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+
+        /* Fixed Headers */
+        .matrix-table th {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Header specific widths */
+        .matrix-table th.region-col {
+            position: sticky;
+            left: 0;
+            width: 80px;
+            min-width: 80px;
+            z-index: 15;
+            background: #f8f9fa;
+            border-right: 2px solid #007bff;
+            box-shadow: 2px 0 5px rgba(0,123,255,0.1);
+        }
+
+        .matrix-table th.golf-course-col {
+            position: sticky;
+            left: 80px;
+            width: 150px;
+            min-width: 150px;
+            z-index: 14;
+            background: #f8f9fa;
+            border-right: 2px solid #007bff;
+            box-shadow: 2px 0 5px rgba(0,123,255,0.1);
+        }
+
+        /* Fixed Left Columns */
+        .matrix-table .region-col {
+            position: sticky;
+            left: 0;
+            width: 80px;
+            min-width: 80px;
+            z-index: 6;
+            background: #fff;
+            border-right: 2px solid #007bff;
+            box-shadow: 2px 0 5px rgba(0,123,255,0.1);
+        }
+
+        .matrix-table .golf-course-col {
+            position: sticky;
+            left: 80px;
+            width: 150px;
+            min-width: 150px;
+            z-index: 5;
+            background: #fff;
+            border-right: 2px solid #007bff;
+            box-shadow: 2px 0 5px rgba(0,123,255,0.1);
+        }
+
+        .matrix-table td {
+            border: 1px solid #dee2e6;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* Date Columns */
+        .date-col {
+            width: 120px;
+            min-width: 120px;
+        }
+
+        /* Time Slot Badges */
+        .time-slots {
+            display: flex;
+            justify-content: space-between;
+            gap: 2px;
+            width: 100%;
+        }
+
+        .time-slot {
+            flex: 1;
+            background: #e9ecef;
+            color: #495057;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 30px;
+        }
+
+        .time-slot:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .time-slot.has-data {
+            background: #28a745;
+            color: white;
+        }
+
+        .time-slot.fully-booked {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Row styling */
+        .matrix-table tr:hover td:not(.region-col):not(.golf-course-col) {
+            background-color: #f8f9fa;
+        }
+
+        /* Region grouping */
+        .region-group {
+            border-top: 2px solid #007bff;
+        }
+
+        .region-group:first-child {
+            border-top: none;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Status indicators */
+        .status-info {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .global-header {
+                padding: 8px 12px;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .quick-menu {
+                padding: 8px 12px;
+            }
+
+            .container {
+                padding: 12px;
+            }
+
+            .tab-button {
+                padding: 12px 8px;
+                font-size: 13px;
+            }
+
+            .matrix-container {
+                height: 500px;
+            }
+        }
+    </style>
+    <!-- ============ CSS 스타일 섹션 끝 ============ -->
+</head>
+<body>
+    <!-- ============ HTML BODY 섹션 시작 ============ -->
+    <!-- ============ 전역 헤더 섹션 ============ -->
+    <!-- Global Header -->
+    <div class="global-header">
+        <div class="header-left">
+            <div class="logo">🏌️</div>
+            <div class="company-name">골프장 예약 관리 시스템</div>
+        </div>
+        <div class="header-right">
+            <div class="notification-icon">🔔</div>
+            <div class="user-profile">관리자 (01034424668)</div>
+            <button class="login-btn">로그아웃</button>
+        </div>
+    </div>
+
+    <!-- ============ 퀵 메뉴 섹션 ============ -->
+    <!-- Quick Menu -->
+    <div class="quick-menu">
+        <button class="menu-item active">티타임:모두</button>
+        <button class="menu-item" onclick="location.href='tee-time-register.html'">티타임등록:매니저이상</button>
+        <button class="menu-item" onclick="location.href='golf-courses.html'">골프장리스트/등록:관리자이상</button>
+        <button class="menu-item">실적등록:매니저이상</button>
+        <button class="menu-item">회원관리:관리자이상</button>
+    </div>
+
+    <!-- ============ 메인 컨테이너 섹션 ============ -->
+    <!-- Main Container -->
+    <div class="container">
+        <!-- ============ 매트릭스 뷰 탭 섹션 ============ -->
+        <!-- Matrix View Tabs -->
+        <div class="matrix-tabs">
+            <!-- ============ 탭 버튼 영역 ============ -->
+            <!-- Tab Buttons -->
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchMatrixTab('daily-booking')">데일리부킹</button>
+                <button class="tab-button" onclick="switchMatrixTab('daily-join')">데일리조인</button>
+                <button class="tab-button" onclick="switchMatrixTab('package-booking')">패키지부킹</button>
+                <button class="tab-button" onclick="switchMatrixTab('package-join')">패키지조인</button>
+            </div>
+
+            <!-- ============ 탭 컨텐츠 영역 ============ -->
+            <!-- Tab Contents -->
+            <div id="daily-booking" class="tab-content active">
+                <div class="matrix-container">
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th class="region-col">지역</th>
+                                <th class="golf-course-col">골프장</th>
+                                <th class="date-col">오늘<br>01/09</th>
+                                <th class="date-col">내일<br>01/10</th>
+                                <th class="date-col">모레<br>01/11</th>
+                                <th class="date-col">01/12<br>토</th>
+                                <th class="date-col">01/13<br>일</th>
+                                <th class="date-col">01/14<br>월</th>
+                                <th class="date-col">01/15<br>화</th>
+                                <!-- 90일까지 동적 생성 -->
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-body-daily-booking">
+                            <!-- 동적으로 생성될 매트릭스 데이터 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="daily-join" class="tab-content">
+                <div class="matrix-container">
+                    <table class="matrix-table">
+                        <thead>
+                            <tr>
+                                <th class="region-col">지역</th>
+                                <th class="golf-course-col">골프장</th>
+                                <th class="date-col">오늘<br>01/09</th>
+                                <th class="date-col">내일<br>01/10</th>
+                                <th class="date-col">모레<br>01/11</th>
+                                <th class="date-col">01/12<br>토</th>
+                                <th class="date-col">01/13<br>일</th>
+                                <th class="date-col">01/14<br>월</th>
+                                <th class="date-col">01/15<br>화</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matrix-body-daily-join">
+                            <!-- 동적으로 생성될 매트릭스 데이터 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="package-booking" class="tab-content">
+                <div class="matrix-container">
+                    <div style="padding: 40px; text-align: center; color: #6c757d;">
+                        패키지부킹 데이터 로딩 중...
+                    </div>
+                </div>
+            </div>
+
+            <div id="package-join" class="tab-content">
+                <div class="matrix-container">
+                    <div style="padding: 40px; text-align: center; color: #6c757d;">
+                        패키지조인 데이터 로딩 중...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Info -->
+            <div class="status-info">
+                <span id="matrix-stats">총 0개 골프장 • 0개 티타임</span>
+                <span>포트 5555 PostgreSQL • 실시간 업데이트</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ JavaScript 섹션 시작 ============ -->
+    <script>
+        // 현재 활성 탭
+        let currentMatrixTab = 'daily-booking';
+        
+        // 동적 데이터 저장소
+        let 골프장데이터 = {};
+        let 매트릭스데이터 = {};
+        let 현재매트릭스데이터 = null;  // 클릭 이벤트용 현재 활성 매트릭스 데이터
+        let 날짜배열 = [];
+
+        // 날짜 생성 (90일)
+        function 날짜생성() {
+            const dates = [];
+            const today = new Date();
+            
+            for (let i = 0; i < 90; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const weekDay = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+                
+                dates.push({
+                    display: i === 0 ? '오늘' : i === 1 ? '내일' : i === 2 ? '모레' : `${month}/${day}`,
+                    subDisplay: i < 3 ? `${month}/${day}` : weekDay,
+                    fullDate: date.toISOString().split('T')[0]
+                });
+            }
+            
+            return dates;
+        }
+
+        // API에서 골프장 데이터 로드
+        async function 골프장데이터로드() {
+            try {
+                const response = await fetch('http://localhost:3001/api/golf-courses');
+                if (response.ok) {
+                    골프장데이터 = await response.json();
+                    console.log('골프장 데이터 로드 완료:', 골프장데이터);
+                } else {
+                    console.error('골프장 데이터 로드 실패');
+                    골프장데이터 = {};
+                }
+            } catch (error) {
+                console.error('골프장 데이터 로드 오류:', error);
+                골프장데이터 = {};
+            }
+        }
+
+        // localStorage에서 티타임 데이터 로드
+        function localStorage에서티타임데이터로드() {
+            try {
+                const savedTeeTimes = localStorage.getItem('savedTeeTimes');
+                if (!savedTeeTimes) {
+                    console.log('📂 localStorage에 저장된 티타임이 없습니다.');
+                    return [];
+                }
+                
+                const parsedData = JSON.parse(savedTeeTimes);
+                console.log(`📂 localStorage에서 ${parsedData.length}개 티타임 로드됨:`, parsedData);
+                return parsedData;
+            } catch (error) {
+                console.error('❌ localStorage 티타임 데이터 파싱 오류:', error);
+                return [];
+            }
+        }
+
+        // 티타임 데이터를 부킹 유형별로 분류
+        function 티타임데이터분류(teeTimeData) {
+            const classified = {
+                'daily-booking': [],
+                'daily-join': [],
+                'package-booking': [],
+                'package-join': []
+            };
+            
+            teeTimeData.forEach(teeTime => {
+                // 인원 수에 따른 부킹/조인 분류
+                const players = parseInt(teeTime.players) || 0;
+                const isBooking = players >= 4;
+                const isJoin = players < 4 && players > 0;
+                
+                // 패키지 여부 확인 (기타 필드에 '패키지' 포함 여부로 임시 구분)
+                const isPackage = teeTime.other && teeTime.other.includes('패키지');
+                
+                if (isPackage) {
+                    if (isBooking) classified['package-booking'].push(teeTime);
+                    else if (isJoin) classified['package-join'].push(teeTime);
+                } else {
+                    if (isBooking) classified['daily-booking'].push(teeTime);
+                    else if (isJoin) classified['daily-join'].push(teeTime);
+                }
+            });
+            
+            console.log('📊 티타임 분류 결과:', {
+                'daily-booking': classified['daily-booking'].length,
+                'daily-join': classified['daily-join'].length,
+                'package-booking': classified['package-booking'].length,
+                'package-join': classified['package-join'].length
+            });
+            
+            return classified;
+        }
+
+        // localStorage 데이터를 매트릭스 형식으로 변환
+        function localStorage데이터를매트릭스로변환(classifiedData, tabName) {
+            const teeTimesForTab = classifiedData[tabName] || [];
+            
+            // 골프장별 그룹화
+            const golfCourseGroups = {};
+            teeTimesForTab.forEach(teeTime => {
+                const golfCourse = teeTime.golfCourse || '미지정';
+                if (!golfCourseGroups[golfCourse]) {
+                    golfCourseGroups[golfCourse] = [];
+                }
+                golfCourseGroups[golfCourse].push(teeTime);
+            });
+            
+            // 매트릭스 형식으로 변환
+            const matrix = [];
+            Object.entries(golfCourseGroups).forEach(([golfCourse, teeTimes]) => {
+                // 지역 정보 추출 (첫 번째 티타임에서)
+                const region = teeTimes[0]?.region || '미지정';
+                
+                // 날짜별 시간대별 집계
+                const dates = {};
+                teeTimes.forEach(teeTime => {
+                    const date = teeTime.date;
+                    const time = teeTime.time || '0000';
+                    const hour = parseInt(time.substring(0, 2)) || 0;
+                    
+                    // 시간대 분류
+                    let timePart = '2부'; // 기본값
+                    if (hour < 10) timePart = '1부';
+                    else if (hour >= 15) timePart = '3부';
+                    
+                    if (!dates[date]) {
+                        dates[date] = { '1부': 0, '2부': 0, '3부': 0 };
+                    }
+                    dates[date][timePart]++;
+                });
+                
+                matrix.push({
+                    golfCourse,
+                    region,
+                    dates
+                });
+            });
+            
+            return matrix;
+        }
+
+        // API에서 매트릭스 데이터 로드
+        async function 매트릭스데이터로드(tabName) {
+            const tabMapping = {
+                'daily-booking': { type: 'DAILY', booking: 'BOOKING' },
+                'daily-join': { type: 'DAILY', booking: 'JOIN' },
+                'package-booking': { type: 'PACKAGE', booking: 'BOOKING' },
+                'package-join': { type: 'PACKAGE', booking: 'JOIN' }
+            };
+            
+            const { type, booking } = tabMapping[tabName] || tabMapping['daily-booking'];
+            
+            // 1. localStorage에서 티타임 데이터 로드
+            const localTeeTimeData = localStorage에서티타임데이터로드();
+            const classifiedData = 티타임데이터분류(localTeeTimeData);
+            const localMatrixData = localStorage데이터를매트릭스로변환(classifiedData, tabName);
+            
+            // 2. API에서 데이터 로드 시도
+            let apiMatrixData = [];
+            let apiDates = [];
+            try {
+                const response = await fetch(`http://localhost:3001/api/tee-time-matrix?type=${type}&booking=${booking}&days=90`);
+                if (response.ok) {
+                    const data = await response.json();
+                    apiMatrixData = data.matrix || [];
+                    apiDates = data.dates || [];
+                    console.log(`✅ API 매트릭스 데이터 로드 완료 (${tabName}):`, data);
+                } else {
+                    console.log('⚠️ API 매트릭스 데이터 로드 실패, localStorage 데이터만 사용');
+                }
+            } catch (error) {
+                console.log('⚠️ API 매트릭스 데이터 로드 오류, localStorage 데이터만 사용:', error.message);
+            }
+            
+            // 3. 날짜 배열 생성 (API가 없으면 90일 생성)
+            if (apiDates.length === 0) {
+                apiDates = 날짜생성().map(d => d.fullDate);
+            }
+            
+            // 4. API 데이터와 localStorage 데이터 통합
+            const combinedMatrix = [...apiMatrixData];
+            
+            // localStorage 데이터를 기존 API 데이터와 병합
+            localMatrixData.forEach(localCourse => {
+                const existingCourse = combinedMatrix.find(c => 
+                    c.golfCourse === localCourse.golfCourse && c.region === localCourse.region
+                );
+                
+                if (existingCourse) {
+                    // 기존 골프장이 있으면 날짜별 데이터 병합
+                    Object.entries(localCourse.dates).forEach(([date, timeParts]) => {
+                        if (!existingCourse.dates[date]) {
+                            existingCourse.dates[date] = { '1부': 0, '2부': 0, '3부': 0 };
+                        }
+                        existingCourse.dates[date]['1부'] += timeParts['1부'] || 0;
+                        existingCourse.dates[date]['2부'] += timeParts['2부'] || 0;
+                        existingCourse.dates[date]['3부'] += timeParts['3부'] || 0;
+                    });
+                } else {
+                    // 새로운 골프장이면 추가
+                    combinedMatrix.push(localCourse);
+                }
+            });
+            
+            // 5. 최종 데이터 저장
+            매트릭스데이터[tabName] = {
+                dates: apiDates,
+                matrix: combinedMatrix
+            };
+            현재매트릭스데이터 = 매트릭스데이터[tabName];
+            날짜배열 = apiDates;
+            
+            console.log(`🔄 통합 매트릭스 데이터 준비 완료 (${tabName}):`, {
+                api: apiMatrixData.length,
+                local: localMatrixData.length,
+                combined: combinedMatrix.length
+            });
+        }
+
+        // 매트릭스 테이블 생성 (PostgreSQL 데이터 기반)
+        function 매트릭스테이블생성(tabName) {
+            const tbody = document.getElementById(`matrix-body-${tabName}`);
+            if (!tbody) return;
+
+            const matrixInfo = 매트릭스데이터[tabName];
+            if (!matrixInfo || !matrixInfo.matrix || matrixInfo.matrix.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 40px; color: #666;">데이터를 로드 중입니다...</td></tr>';
+                return;
+            }
+
+            let html = '';
+            let regionCount = 0;
+            let golfCourseCount = 0;
+            const processedRegions = new Set();
+
+            // 지역별 그룹화
+            const regionGroups = {};
+            matrixInfo.matrix.forEach(item => {
+                if (!regionGroups[item.region]) {
+                    regionGroups[item.region] = [];
+                }
+                regionGroups[item.region].push(item);
+            });
+
+            Object.entries(regionGroups).forEach(([region, courses]) => {
+                if (!processedRegions.has(region)) {
+                    regionCount++;
+                    processedRegions.add(region);
+                }
+
+                courses.forEach((course, index) => {
+                    golfCourseCount++;
+                    html += `<tr class="${index === 0 ? 'region-group' : ''}">`;
+                    
+                    // 지역 칼럼 (첫 번째 골프장에서만 표시)
+                    if (index === 0) {
+                        html += `<td class="region-col" rowspan="${courses.length}">${region}</td>`;
+                    }
+                    
+                    // 골프장 칼럼
+                    html += `<td class="golf-course-col">${course.golfCourse}</td>`;
+                    
+                    // 날짜별 시간대 칼럼들
+                    날짜배열.forEach(date => {
+                        const dateSlots = course.dates[date] || { '1부': 0, '2부': 0, '3부': 0 };
+                        html += `<td class="date-col">
+                            <div class="time-slots">
+                                <div class="time-slot ${dateSlots['1부'] > 0 ? 'has-data' : ''}" 
+                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '1부')"
+                                     title="1부: ${dateSlots['1부']}개">
+                                     ${dateSlots['1부']}
+                                </div>
+                                <div class="time-slot ${dateSlots['2부'] > 0 ? 'has-data' : ''}" 
+                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '2부')"
+                                     title="2부: ${dateSlots['2부']}개">
+                                     ${dateSlots['2부']}
+                                </div>
+                                <div class="time-slot ${dateSlots['3부'] > 0 ? 'has-data' : ''}" 
+                                     onclick="상세페이지이동('${course.golfCourse}', '${date}', '3부')"
+                                     title="3부: ${dateSlots['3부']}개">
+                                     ${dateSlots['3부']}
+                                </div>
+                            </div>
+                        </td>`;
+                    });
+                    
+                    html += '</tr>';
+                });
+            });
+            
+            tbody.innerHTML = html;
+            
+            // 통계 업데이트
+            document.getElementById('matrix-stats').textContent = 
+                `총 ${golfCourseCount}개 골프장 • ${regionCount}개 지역`;
+        }
+
+
+        // 매트릭스 탭 전환
+        async function switchMatrixTab(tabName) {
+            // 모든 탭 버튼 비활성화
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 모든 탭 컨텐츠 숨김
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 선택된 탭 활성화
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            currentMatrixTab = tabName;
+            
+            // 로딩 상태 표시
+            const tbody = document.getElementById(`matrix-body-${tabName}`);
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 40px; color: #666;">데이터 로딩 중...</td></tr>';
+            }
+            
+            // 매트릭스 데이터 로드 후 테이블 생성
+            await 매트릭스데이터로드(tabName);
+            현재매트릭스데이터 = 매트릭스데이터[tabName];  // 탭 전환시 현재 데이터 업데이트
+            매트릭스테이블생성(tabName);
+        }
+
+        // 상세 페이지 이동
+        function 상세페이지이동(golfCourse, date, timePart) {
+            // 현재 활성 탭 정보 가져기
+            const activeTab = document.querySelector('.tab-button.active');
+            let type = 'all';
+            
+            if (activeTab) {
+                const tabText = activeTab.textContent.toLowerCase();
+                if (tabText.includes('부킹')) type = 'booking';
+                else if (tabText.includes('조인')) type = 'join';
+            }
+            
+            // 지역 정보를 매트릭스 데이터에서 찾기
+            let region = '';
+            if (현재매트릭스데이터 && 현재매트릭스데이터.matrix) {
+                const courseData = 현재매트릭스데이터.matrix.find(item => 
+                    item.golfCourse === golfCourse
+                );
+                if (courseData) {
+                    region = courseData.region;
+                }
+            }
+            
+            // URL 파라미터 구성
+            const params = new URLSearchParams({
+                golfCourse: golfCourse,
+                region: region,
+                date: date,
+                timePart: timePart,
+                type: type
+            });
+            
+            // 티타임 목록 페이지로 이동
+            window.location.href = `tee-time-list.html?${params.toString()}`;
+        }
+
+        // 로그인 상태 확인
+        function 로그인상태확인() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                alert('로그인이 필요합니다.');
+                window.location.href = '/login.html';
+                return null;
+            }
+            
+            try {
+                return JSON.parse(user);
+            } catch (error) {
+                console.error('사용자 정보 파싱 오류:', error);
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+                return null;
+            }
+        }
+
+        // 사용자 정보 표시 업데이트
+        function 사용자정보업데이트(userData) {
+            const userProfile = document.querySelector('.user-profile');
+            if (userProfile) {
+                userProfile.textContent = `${userData.name} (${userData.phone})`;
+            }
+        }
+
+        // 로그아웃 처리
+        function 로그아웃() {
+            const confirmed = confirm('로그아웃하시겠습니까?');
+            if (confirmed) {
+                localStorage.removeItem('user');
+                alert('로그아웃되었습니다.');
+                window.location.href = '/login.html';
+            }
+        }
+
+        // 페이지 로드시 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🏌️ 골프장 예약 관리 시스템 초기화 시작');
+            
+            // 0. 로그인 상태 확인
+            const userData = 로그인상태확인();
+            if (!userData) return;
+            
+            // 사용자 정보 표시 업데이트
+            사용자정보업데이트(userData);
+            
+            // 로그아웃 버튼 이벤트 연결
+            const logoutBtn = document.querySelector('.login-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', 로그아웃);
+            }
+            
+            // 1. 골프장 데이터 로드
+            await 골프장데이터로드();
+            
+            // 2. 날짜 헤더 동적 생성
+            const dates = 날짜생성();
+            const tableHeaders = document.querySelectorAll('.matrix-table thead tr');
+            
+            tableHeaders.forEach(header => {
+                // 기존 날짜 컬럼 제거 (처음 2개는 지역/골프장 컬럼)
+                const existingDateCols = header.querySelectorAll('.date-col');
+                existingDateCols.forEach(col => col.remove());
+                
+                // 새 날짜 컬럼 추가
+                dates.forEach(dateInfo => {
+                    const th = document.createElement('th');
+                    th.className = 'date-col';
+                    th.innerHTML = `${dateInfo.display}<br>${dateInfo.subDisplay}`;
+                    header.appendChild(th);
+                });
+            });
+            
+            // 3. 초기 매트릭스 데이터 로드 (데일리부킹 탭)
+            console.log('초기 매트릭스 데이터 로드 중...');
+            await 매트릭스데이터로드('daily-booking');
+            매트릭스테이블생성('daily-booking');
+            
+            console.log('✅ 시스템 초기화 완료');
+        });
+    </script>
+    <!-- ============ JavaScript 섹션 끝 ============ -->
+</body>
+<!-- ============ HTML 문서 끝 ============ -->
+</html>

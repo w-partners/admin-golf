@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골프장 수정 - 골프장 예약 관리 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            line-height: 1.6;
+        }
+
+        /* 글로벌 헤더 */
+        .global-header {
+            background: linear-gradient(135deg, #2c5f41 0%, #4a8b6b 100%);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .company-name {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 퀵메뉴 */
+        .quick-menu {
+            background: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #eee;
+        }
+
+        .quick-menu-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            padding: 0 20px;
+        }
+
+        .menu-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: #e9ecef;
+            border-color: #ccc;
+        }
+
+        .menu-item.active {
+            background: #2c5f41;
+            color: white;
+            border-color: #2c5f41;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            color: #2c5f41;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 폼 스타일 */
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #2c5f41;
+            box-shadow: 0 0 0 2px rgba(44, 95, 65, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* 버튼 스타일 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #2c5f41;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e4330;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+
+        .btn-outline:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 글로벌 헤더 -->
+    <header class="global-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">🏌️</div>
+                <div class="company-name">골프장 예약 관리 시스템</div>
+            </div>
+            <div class="user-section">
+                <div class="user-info">
+                    <span>🔔</span>
+                    <span>관리자</span>
+                </div>
+                <button class="logout-btn">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 퀵메뉴 -->
+    <nav class="quick-menu">
+        <div class="quick-menu-content">
+            <a href="index.html" class="menu-item">티타임:모두</a>
+            <a href="tee-time-register.html" class="menu-item">티타임등록:매니저이상</a>
+            <a href="golf-courses.html" class="menu-item active">골프장리스트/등록:관리자이상</a>
+            <a href="#" class="menu-item">실적등록:매니저이상</a>
+            <a href="#" class="menu-item">회원관리:관리자이상</a>
+        </div>
+    </nav>
+
+    <!-- 메인 컨테이너 -->
+    <div class="container">
+        <!-- 페이지 헤더 -->
+        <div class="page-header">
+            <h1 class="page-title">골프장 정보 수정</h1>
+            <p class="page-subtitle">골프장의 기본 정보를 수정할 수 있습니다.</p>
+        </div>
+
+        <!-- 로딩/에러 메시지 -->
+        <div id="loading" class="loading">골프장 정보를 불러오는 중...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="success" class="success" style="display: none;"></div>
+
+        <!-- 수정 폼 -->
+        <div id="editForm" class="form-container" style="display: none;">
+            <form id="golfCourseForm">
+                <input type="hidden" id="courseId" />
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="sequence">순번</label>
+                        <input type="number" id="sequence" class="form-input" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="region">지역 *</label>
+                        <select id="region" class="form-select" required>
+                            <option value="">지역 선택</option>
+                            <option value="경기북부">경기북부</option>
+                            <option value="경기남부">경기남부</option>
+                            <option value="경기동부">경기동부</option>
+                            <option value="강원">강원</option>
+                            <option value="경상">경상</option>
+                            <option value="충남">충남</option>
+                            <option value="전라">전라</option>
+                            <option value="제주">제주</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="name">골프장명 *</label>
+                    <input type="text" id="name" class="form-input" required placeholder="골프장명을 입력하세요" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="address">주소 *</label>
+                    <input type="text" id="address" class="form-input" required placeholder="골프장 주소를 입력하세요" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="contact">연락처 *</label>
+                        <input type="tel" id="contact" class="form-input" required placeholder="연락처를 입력하세요" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="status">운영상태 *</label>
+                        <select id="status" class="form-select" required>
+                            <option value="">상태 선택</option>
+                            <option value="API연동">API연동</option>
+                            <option value="수동">수동</option>
+                            <option value="대기">대기</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <a href="golf-courses.html" class="btn btn-outline">취소</a>
+                    <button type="submit" class="btn btn-primary">수정 완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let courseId = null;
+
+        // URL에서 골프장 ID 가져오기
+        function getCourseIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // 골프장 정보 불러오기
+        async function loadGolfCourse() {
+            courseId = getCourseIdFromURL();
+            
+            if (!courseId) {
+                showError('골프장 ID가 없습니다.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3001/api/golf-courses/${courseId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const course = await response.json();
+                populateForm(course);
+                
+                // 로딩 숨기고 폼 표시
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('editForm').style.display = 'block';
+                
+            } catch (error) {
+                console.error('골프장 정보 로드 실패:', error);
+                showError(`골프장 정보를 불러올 수 없습니다: ${error.message}`);
+            }
+        }
+
+        // 폼에 데이터 채우기
+        function populateForm(course) {
+            document.getElementById('courseId').value = course.id;
+            document.getElementById('sequence').value = course.sequence;
+            document.getElementById('region').value = course.region;
+            document.getElementById('name').value = course.name;
+            document.getElementById('address').value = course.address;
+            document.getElementById('contact').value = course.contact;
+            document.getElementById('status').value = course.status;
+        }
+
+        // 골프장 정보 수정
+        async function updateGolfCourse(formData) {
+            try {
+                const response = await fetch(`http://localhost:3001/api/golf-courses/${courseId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess('골프장 정보가 성공적으로 수정되었습니다.');
+                    
+                    // 2초 후 목록으로 이동
+                    setTimeout(() => {
+                        window.location.href = 'golf-courses.html';
+                    }, 2000);
+                } else {
+                    showError('골프장 수정에 실패했습니다.');
+                }
+                
+            } catch (error) {
+                console.error('골프장 수정 실패:', error);
+                showError(`골프장 수정에 실패했습니다: ${error.message}`);
+            }
+        }
+
+        // 에러 메시지 표시
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        // 성공 메시지 표시
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // 폼 제출 처리
+        document.addEventListener('DOMContentLoaded', function() {
+            // 골프장 정보 로드
+            loadGolfCourse();
+
+            // 폼 제출 이벤트
+            document.getElementById('golfCourseForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    name: document.getElementById('name').value.trim(),
+                    region: document.getElementById('region').value,
+                    address: document.getElementById('address').value.trim(),
+                    contact: document.getElementById('contact').value.trim(),
+                    status: document.getElementById('status').value
+                };
+
+                // 유효성 검사
+                if (!formData.name || !formData.region || !formData.address || !formData.contact || !formData.status) {
+                    showError('모든 필수 항목을 입력해주세요.');
+                    return;
+                }
+
+                await updateGolfCourse(formData);
+            });
+        });
+    </script>
+</body>
+</html>

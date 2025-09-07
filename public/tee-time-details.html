@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<!-- ================================================================ -->
+<!-- 파일: tee-time-details.html (티타임 세부 정보 페이지) -->
+<!-- 설명: 매트릭스 카운트 클릭시 표시되는 티타임 세부 정보 스프레드시트 -->
+<!-- 기능: 선택된 골프장/날짜/시간대의 티타임 목록을 테이블 형태로 표시 -->
+<!-- ================================================================ -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골프장 예약 관리 시스템 - 티타임 세부 정보</title>
+    <!-- ============ CSS 스타일 섹션 시작 ============ -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            line-height: 1.6;
+        }
+
+        /* ============ 헤더 영역 스타일 ============ */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .breadcrumb {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .header .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* ============ 필터 정보 영역 스타일 ============ */
+        .filter-info {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .filter-item label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .filter-item span {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* ============ 테이블 컨테이너 스타일 ============ */
+        .table-container {
+            margin: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        /* ============ 스프레드시트 테이블 스타일 ============ */
+        .tee-time-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .tee-time-table thead {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tee-time-table th {
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+
+        .tee-time-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+            white-space: nowrap;
+        }
+
+        .tee-time-table tbody tr:hover {
+            background-color: #f1f3f4;
+        }
+
+        /* ============ 상태별 스타일 ============ */
+        .status-available {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .status-reserved {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .status-confirmed {
+            background-color: #cce5ff;
+            color: #004085;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .status-completed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        /* ============ 가격 스타일 ============ */
+        .price {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        /* ============ 로딩 및 오류 메시지 스타일 ============ */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #dc3545;
+            font-size: 16px;
+            background-color: #f8d7da;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #f1b0b7;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+            font-size: 16px;
+        }
+
+        /* ============ 반응형 디자인 ============ */
+        @media (max-width: 768px) {
+            .header {
+                position: relative;
+                padding: 15px 0;
+            }
+            
+            .header .back-btn {
+                position: relative;
+                left: 0;
+                top: 0;
+                transform: none;
+                margin-bottom: 10px;
+            }
+
+            .filter-info {
+                margin: 10px;
+                padding: 15px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-item {
+                justify-content: space-between;
+            }
+
+            .table-container {
+                margin: 10px;
+                overflow-x: auto;
+            }
+
+            .tee-time-table {
+                min-width: 800px;
+            }
+
+            .tee-time-table th,
+            .tee-time-table td {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+        }
+    </style>
+    <!-- ============ CSS 스타일 섹션 끝 ============ -->
+</head>
+<body>
+    <!-- ============ HTML BODY 섹션 시작 ============ -->
+    
+    <!-- ============ 헤더 영역 ============ -->
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">← 돌아가기</button>
+        <h1>🏌️ 티타임 세부 정보</h1>
+        <div class="breadcrumb">골프장 예약 관리 시스템 > 매트릭스 뷰 > 티타임 세부 정보</div>
+    </div>
+
+    <!-- ============ 필터 정보 표시 영역 ============ -->
+    <div class="filter-info" id="filterInfo">
+        <div class="filter-item">
+            <label>골프장:</label>
+            <span id="golfCourseName">-</span>
+        </div>
+        <div class="filter-item">
+            <label>지역:</label>
+            <span id="regionName">-</span>
+        </div>
+        <div class="filter-item">
+            <label>날짜:</label>
+            <span id="selectedDate">-</span>
+        </div>
+        <div class="filter-item">
+            <label>시간대:</label>
+            <span id="timePart">-</span>
+        </div>
+        <div class="filter-item">
+            <label>총 티타임 수:</label>
+            <span id="totalCount">0</span>
+        </div>
+    </div>
+
+    <!-- ============ 티타임 테이블 영역 ============ -->
+    <div class="table-container">
+        <div class="table-header">
+            📋 티타임 세부 목록
+        </div>
+        
+        <!-- 로딩 메시지 -->
+        <div class="loading" id="loadingMessage">
+            🔄 티타임 정보를 불러오는 중...
+        </div>
+
+        <!-- 오류 메시지 -->
+        <div class="error" id="errorMessage" style="display: none;">
+            ❌ 데이터를 불러오는데 실패했습니다.
+        </div>
+
+        <!-- 데이터 없음 메시지 -->
+        <div class="no-data" id="noDataMessage" style="display: none;">
+            📭 해당 조건의 티타임이 없습니다.
+        </div>
+
+        <!-- ============ 스프레드시트 테이블 ============ -->
+        <table class="tee-time-table" id="teeTimeTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>티타임</th>
+                    <th>그린피<br>(만원)</th>
+                    <th>인원<br>(명)</th>
+                    <th>유형</th>
+                    <th>예약유형</th>
+                    <th>홀선택</th>
+                    <th>캐디</th>
+                    <th>선입금</th>
+                    <th>식사</th>
+                    <th>카트비포함</th>
+                    <th>요청사항</th>
+                    <th>등록일</th>
+                    <th>상태</th>
+                </tr>
+            </thead>
+            <tbody id="teeTimeTableBody">
+                <!-- 동적으로 생성될 티타임 데이터 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ============ JavaScript 섹션 시작 ============ -->
+    <script>
+        // ============ 전역 변수 ============
+        let currentFilters = {
+            golfCourse: '',
+            region: '',
+            date: '',
+            timePart: ''
+        };
+
+        // ============ 페이지 초기화 ============
+        window.addEventListener('load', function() {
+            // URL 파라미터에서 필터 정보 추출
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            currentFilters.golfCourse = urlParams.get('golfCourse') || '';
+            currentFilters.region = urlParams.get('region') || '';
+            currentFilters.date = urlParams.get('date') || '';
+            currentFilters.timePart = urlParams.get('timePart') || '';
+
+            // 필터 정보 표시
+            updateFilterInfo();
+            
+            // 티타임 데이터 로드
+            loadTeeTimeDetails();
+        });
+
+        // ============ 필터 정보 업데이트 ============
+        function updateFilterInfo() {
+            document.getElementById('golfCourseName').textContent = currentFilters.golfCourse || '-';
+            document.getElementById('regionName').textContent = currentFilters.region || '-';
+            document.getElementById('selectedDate').textContent = formatDate(currentFilters.date) || '-';
+            document.getElementById('timePart').textContent = getTimePartName(currentFilters.timePart) || '-';
+        }
+
+        // ============ 시간대 이름 변환 ============
+        function getTimePartName(timePart) {
+            const timePartNames = {
+                '1부': '1부 (10시 이전)',
+                '2부': '2부 (10시-15시)', 
+                '3부': '3부 (15시 이후)'
+            };
+            return timePartNames[timePart] || timePart;
+        }
+
+        // ============ 날짜 포맷팅 ============
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+            const weekday = weekdays[date.getDay()];
+            
+            return `${year}-${month}-${day} (${weekday})`;
+        }
+
+        // ============ 티타임 세부 정보 로드 ============
+        async function loadTeeTimeDetails() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const noDataMessage = document.getElementById('noDataMessage');
+            const teeTimeTable = document.getElementById('teeTimeTable');
+            
+            try {
+                showLoading(true);
+                
+                // API 호출
+                const queryParams = new URLSearchParams({
+                    golfCourse: currentFilters.golfCourse,
+                    region: currentFilters.region,
+                    date: currentFilters.date,
+                    timePart: currentFilters.timePart
+                });
+                
+                const response = await fetch(`http://localhost:8081/api/tee-time-details?${queryParams}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                showLoading(false);
+                
+                if (data.length === 0) {
+                    showNoData(true);
+                } else {
+                    renderTeeTimeTable(data);
+                    document.getElementById('totalCount').textContent = data.length;
+                }
+                
+            } catch (error) {
+                console.error('티타임 세부 정보 로드 오류:', error);
+                showLoading(false);
+                showError(true, error.message);
+            }
+        }
+
+        // ============ 티타임 테이블 렌더링 ============
+        function renderTeeTimeTable(teeTimeData) {
+            const tableBody = document.getElementById('teeTimeTableBody');
+            const teeTimeTable = document.getElementById('teeTimeTable');
+            
+            tableBody.innerHTML = '';
+            
+            teeTimeData.forEach((teeTime, index) => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${teeTime.티타임}</strong></td>
+                    <td class="price">${teeTime.그린피}</td>
+                    <td>${teeTime.인원}</td>
+                    <td>${teeTime.유형}</td>
+                    <td>${teeTime.예약유형}</td>
+                    <td>${teeTime.홀선택}</td>
+                    <td>${teeTime.캐디}</td>
+                    <td>${teeTime.선입금}</td>
+                    <td>${teeTime.식사}</td>
+                    <td>${teeTime.카트비포함}</td>
+                    <td>${teeTime.요청사항 || '-'}</td>
+                    <td>${formatDateTime(teeTime.created_at)}</td>
+                    <td>${getStatusBadge('AVAILABLE')}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            teeTimeTable.style.display = 'table';
+        }
+
+        // ============ 날짜시간 포맷팅 ============
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return '-';
+            
+            const date = new Date(dateTimeString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
+        // ============ 상태 배지 생성 ============
+        function getStatusBadge(status) {
+            const statusInfo = {
+                'AVAILABLE': { class: 'status-available', text: '예약가능' },
+                'RESERVED': { class: 'status-reserved', text: '예약중' },
+                'CONFIRMED': { class: 'status-confirmed', text: '예약확정' },
+                'COMPLETED': { class: 'status-completed', text: '완료' }
+            };
+            
+            const info = statusInfo[status] || { class: 'status-available', text: '예약가능' };
+            return `<span class="${info.class}">${info.text}</span>`;
+        }
+
+        // ============ UI 상태 관리 함수들 ============
+        function showLoading(show) {
+            document.getElementById('loadingMessage').style.display = show ? 'block' : 'none';
+            if (show) {
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('noDataMessage').style.display = 'none';
+                document.getElementById('teeTimeTable').style.display = 'none';
+            }
+        }
+
+        function showError(show, message = '') {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.style.display = show ? 'block' : 'none';
+            if (show && message) {
+                errorElement.innerHTML = `❌ ${message}`;
+            }
+        }
+
+        function showNoData(show) {
+            document.getElementById('noDataMessage').style.display = show ? 'block' : 'none';
+            if (show) {
+                document.getElementById('teeTimeTable').style.display = 'none';
+            }
+        }
+
+        // ============ 뒤로가기 함수 ============
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+    <!-- ============ JavaScript 섹션 끝 ============ -->
+</body>
+<!-- ============ HTML 문서 끝 ============ -->
+</html>

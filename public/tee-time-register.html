@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<!-- ================================================================ -->
+<!-- 파일: tee-time-register.html (한 줄씩 티타임 등록 시스템) -->
+<!-- 설명: 엑셀과 같은 키보드 네비게이션과 실시간 저장 기능 -->
+<!-- 기능: 자음모음 골프장 검색, Tab/Space/Enter 키보드 제어, 자동 저장 -->
+<!-- ================================================================ -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골프장 예약 관리 시스템 - 티타임 등록</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.4;
+        }
+
+        /* ============ 전역 헤더 스타일 ============ */
+        .global-header {
+            background: linear-gradient(135deg, #2c5282 0%, #2b6cb0 100%);
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        .notification-icon {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .notification-icon:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .user-profile {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .login-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* ============ 퀵 메뉴 스타일 ============ */
+        .quick-menu {
+            background: white;
+            padding: 12px 24px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+        }
+
+        .menu-item {
+            white-space: nowrap;
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+            transition: all 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #e9ecef;
+        }
+
+        .menu-item.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 22px;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #545b62;
+        }
+
+        .info-panel {
+            background: #e3f2fd;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-panel h3 {
+            color: #1976d2;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .info-panel .controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .key-badge {
+            background: #1976d2;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tee-time-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .status-info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .table-wrapper {
+            overflow: auto;
+            max-height: 70vh;
+        }
+
+        .tee-time-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+
+        .tee-time-table th {
+            background: #f1f3f4;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+            border: 1px solid #d1d3d4;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .tee-time-table td {
+            padding: 6px 4px;
+            border: 1px solid #e1e3e4;
+            position: relative;
+            background: white;
+            text-align: center;
+        }
+
+        .tee-time-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .tee-time-table tr.editing {
+            background-color: #fff3cd;
+        }
+
+        .tee-time-table tr.completed {
+            background-color: #d1edff;
+        }
+
+        .cell-input, .cell-select {
+            width: 100%;
+            padding: 6px 8px;
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            outline: none;
+            text-align: center;
+        }
+
+        .cell-input:focus, .cell-select:focus {
+            background: #fff3cd;
+            box-shadow: inset 0 0 0 2px #ffc107;
+            border-radius: 3px;
+        }
+
+        .cell-input.auto-fill {
+            background: #e8f5e8;
+            color: #155724;
+            font-weight: 500;
+        }
+
+        .cell-input.invalid {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .golf-course-input {
+            position: relative;
+        }
+
+        .golf-course-dropdown {
+            position: fixed; /* fixed로 변경하여 모든 요소 위에 표시 */
+            top: 100%;
+            left: 0;
+            right: auto;
+            width: 250px; /* 고정 너비 설정 */
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 99999; /* 더 높은 z-index */
+            display: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25); /* 더 강한 그림자 */
+            border-top: 2px solid #007bff; /* 상단 테두리로 시각적 구분 강화 */
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item.selected {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            margin: 0 2px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            color: #333;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .action-btn.add {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .action-btn.add:hover {
+            background: #218838;
+        }
+
+        .action-btn.book {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .action-btn.book:hover {
+            background: #0056b3;
+        }
+
+        .action-btn.delete {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .action-btn.delete:hover {
+            background: #c82333;
+        }
+
+        .status-messages {
+            margin-bottom: 15px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* 컬럼 너비 */
+        .col-no { width: 40px; }
+        .col-region { width: 60px; display: none; } /* 지역 필드 숨김 */
+        .col-golf-course { width: 180px; } /* 골프장 필드 너비 확장 */
+        .col-date { width: 80px; }
+        .col-time { width: 70px; }
+        .col-green-fee { width: 80px; }
+        .col-players { width: 80px; }
+        .col-request { width: 80px; }
+        .col-hole { width: 60px; }
+        .col-caddy { width: 90px; }
+        .col-prepay { width: 60px; }
+        .col-meal { width: 80px; }
+        .col-cart { width: 60px; }
+        .col-other { width: 120px; }
+        .col-actions { width: 100px; }
+
+        /* 키보드 네비게이션 하이라이트 */
+        .cell-focused {
+            box-shadow: inset 0 0 0 3px #007bff !important;
+        }
+        
+        /* 저장 완료된 행 스타일 */
+        .saved {
+            background-color: #f8f9fa;
+        }
+        
+        .saved .cell-input,
+        .saved .cell-select {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+            border-radius: 3px;
+        }
+
+        /* 저장 상태 표시 */
+        .saving {
+            position: relative;
+        }
+
+        .saving::after {
+            content: "💾";
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .auto-complete {
+            background: #e8f5e8;
+            animation: highlight 0.5s ease-out;
+        }
+
+        @keyframes highlight {
+            0% { background: #ffc107; }
+            100% { background: #e8f5e8; }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .info-panel .controls {
+                justify-content: center;
+            }
+
+            .table-wrapper {
+                max-height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ============ 글로벌 헤더 섹션 ============ -->
+    <div class="global-header">
+        <div class="header-left">
+            <div class="logo">🏌️</div>
+            <div class="company-name">골프장 예약 관리 시스템</div>
+        </div>
+        <div class="header-right">
+            <div class="notification-icon">🔔</div>
+            <div class="user-profile">관리자 (01034424668)</div>
+            <button class="login-btn">로그아웃</button>
+        </div>
+    </div>
+
+    <!-- ============ 퀵 메뉴 섹션 ============ -->
+    <div class="quick-menu">
+        <button class="menu-item" onclick="location.href='index.html'">티타임:모두</button>
+        <button class="menu-item active">티타임등록:매니저이상</button>
+        <button class="menu-item" onclick="location.href='golf-courses.html'">골프장리스트/등록:관리자이상</button>
+        <button class="menu-item">실적등록:매니저이상</button>
+        <button class="menu-item">회원관리:관리자이상</button>
+    </div>
+
+    <!-- ============ 메인 컨테이너 ============ -->
+    <div class="container">
+        <div class="header">
+            <h1>🏌️ 티타임 등록 시스템</h1>
+            <a href="/" class="back-btn">← 메인으로</a>
+        </div>
+
+    <div class="info-panel">
+        <h3>⌨️ 키보드 제어 가이드</h3>
+        <div class="controls">
+            <div class="control-item">
+                <span class="key-badge">Tab</span>
+                <span>다음 필드로 이동</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">Space</span>
+                <span>선택 항목에서 다음으로</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">Enter</span>
+                <span>현재 행 저장 후 새 행 추가</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">ESC</span>
+                <span>입력 취소</span>
+            </div>
+            <div class="control-item">
+                <span class="key-badge">자음모음</span>
+                <span>골프장 자동검색</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-messages">
+        <div class="message success" id="successMessage"></div>
+        <div class="message error" id="errorMessage"></div>
+        <div class="message info" id="infoMessage"></div>
+    </div>
+
+    <div class="tee-time-container">
+        <div class="table-header">
+            <span class="table-title">티타임 등록</span>
+            <span class="status-info">등록된 티타임: <span id="totalCount">0</span>개</span>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="tee-time-table" id="teeTimeTable">
+                <thead>
+                    <tr>
+                        <th class="col-no">번호</th>
+                        <th class="col-region" style="display: none;">지역</th>
+                        <th class="col-golf-course">골프장</th>
+                        <th class="col-date">티업(날짜)</th>
+                        <th class="col-time">티업(시간)</th>
+                        <th class="col-green-fee">그린피(만원)</th>
+                        <th class="col-players">요청인원</th>
+                        <th class="col-request">요청사항</th>
+                        <th class="col-hole">홀선택</th>
+                        <th class="col-caddy">캐디</th>
+                        <th class="col-prepay">선입금</th>
+                        <th class="col-meal">식사</th>
+                        <th class="col-cart">카트비포함</th>
+                        <th class="col-other">기타</th>
+                        <th class="col-actions">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="teeTimeBody">
+                    <!-- 동적으로 생성되는 행들 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let golfCourses = {};
+        let currentDropdownIndex = -1; // 드롭다운 선택된 인덱스
+        let currentDropdownResults = []; // 현재 표시된 검색 결과
+        let currentEditingRow = null;
+        let totalTeeTimeCount = 0;
+        let rowCounter = 0;
+        let currentFocusedCell = null;
+
+        // 기본값 설정
+        const defaultValues = {
+            request: '무관',
+            hole: '18홀',
+            caddy: '캐디',
+            prepay: 'O',
+            meal: '포함',
+            cart: 'O'
+        };
+
+        // 선택 옵션 데이터
+        const selectOptions = {
+            request: ['무관', '커플', '남성', '여성'],
+            hole: ['18홀', '36홀', '9홀'],
+            caddy: ['캐디', '노캐디', '운전캐디', '교육생캐디'],
+            prepay: ['O', 'X'],
+            meal: ['포함', '불포함'],
+            cart: ['O', 'X']
+        };
+
+        // 메시지 표시 함수
+        function showMessage(type, text) {
+            hideAllMessages();
+            const messageEl = document.getElementById(type + 'Message');
+            if (messageEl) {
+                messageEl.textContent = text;
+                messageEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, type === 'error' ? 5000 : 3000);
+            }
+        }
+
+        function hideAllMessages() {
+            document.querySelectorAll('.message').forEach(msg => {
+                msg.style.display = 'none';
+            });
+        }
+
+        // 골프장 데이터 로드
+        async function loadGolfCourses() {
+            try {
+                const response = await fetch('/api/golf-courses');
+                if (response.ok) {
+                    golfCourses = await response.json();
+                    console.log('골프장 데이터 로드 완료:', golfCourses);
+                } else {
+                    showMessage('error', '골프장 목록을 불러올 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('골프장 로드 오류:', error);
+                showMessage('error', '골프장 목록 로드 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 자음모음 기반 골프장 검색 (개선된 버전)
+        function searchGolfCourses(query) {
+            if (!query || query.length < 1) return [];
+            
+            const results = [];
+            const queryLower = query.toLowerCase();
+            
+            Object.keys(golfCourses).forEach(region => {
+                golfCourses[region].forEach(course => {
+                    const courseName = course.name.toLowerCase();
+                    
+                    // 정확히 포함된 경우 (우선순위 1)
+                    if (courseName.includes(queryLower)) {
+                        results.push({
+                            id: course.id,
+                            name: course.name,
+                            region: region,
+                            status: course.status,
+                            priority: 1
+                        });
+                    }
+                    // 자음 검색 (한글) (우선순위 2)
+                    else if (matchesKoreanConsonants(course.name, query)) {
+                        results.push({
+                            id: course.id,
+                            name: course.name,
+                            region: region,
+                            status: course.status,
+                            priority: 2
+                        });
+                    }
+                });
+            });
+            
+            // 우선순위별로 정렬
+            results.sort((a, b) => a.priority - b.priority);
+            return results.slice(0, 10); // 최대 10개 결과
+        }
+        
+        // 한글 자음 매칭 함수
+        function matchesKoreanConsonants(text, query) {
+            // 한글 초성 추출 함수
+            function getInitialConsonants(str) {
+                const consonants = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+                let result = '';
+                
+                for (let i = 0; i < str.length; i++) {
+                    const char = str[i];
+                    const code = char.charCodeAt(0);
+                    
+                    if (code >= 0xAC00 && code <= 0xD7AF) { // 완성형 한글
+                        const initialIndex = Math.floor((code - 0xAC00) / 588);
+                        result += consonants[initialIndex];
+                    } else if (consonants.includes(char)) { // 자음 자체
+                        result += char;
+                    }
+                }
+                return result;
+            }
+            
+            const textConsonants = getInitialConsonants(text);
+            const queryConsonants = getInitialConsonants(query);
+            
+            return textConsonants.includes(queryConsonants);
+        }
+
+        // 골프장 드롭다운 표시
+        function showGolfCourseDropdown(inputEl, results) {
+            // 검색 결과를 전역 변수에 저장
+            currentDropdownResults = results;
+            currentDropdownIndex = -1; // 선택 인덱스 초기화
+            
+            let dropdown = inputEl.parentElement.querySelector('.golf-course-dropdown');
+            
+            if (!dropdown) {
+                dropdown = document.createElement('div');
+                dropdown.className = 'golf-course-dropdown';
+                inputEl.parentElement.appendChild(dropdown);
+            }
+            
+            dropdown.innerHTML = '';
+            
+            if (results.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            
+            results.forEach((course, index) => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.textContent = `${course.name} (${course.region})`;
+                item.dataset.courseId = course.id;
+                item.dataset.courseName = course.name;
+                item.dataset.region = course.region;
+                
+                item.addEventListener('click', () => {
+                    selectGolfCourse(inputEl, course);
+                    dropdown.style.display = 'none';
+                });
+                
+                dropdown.appendChild(item);
+            });
+            
+            // fixed 포지션을 위한 정확한 위치 계산
+            const inputRect = inputEl.getBoundingClientRect();
+            dropdown.style.top = (inputRect.bottom + window.scrollY) + 'px';
+            dropdown.style.left = (inputRect.left + window.scrollX) + 'px';
+            dropdown.style.display = 'block';
+        }
+
+        // 골프장 유효성 검증
+        function validateGolfCourse(inputValue) {
+            // 정확히 일치하는 골프장명 찾기
+            const exactMatch = Object.values(golfCourses).find(course => course.name === inputValue);
+            return exactMatch;
+        }
+
+        // 골프장 선택
+        function selectGolfCourse(inputEl, course) {
+            const row = inputEl.closest('tr');
+            
+            inputEl.value = course.name;
+            inputEl.dataset.courseId = course.id;
+            inputEl.style.backgroundColor = '#e8f5e8'; // 유효한 골프장 표시
+            
+            // 지역 자동 입력
+            const regionCell = row.querySelector('[data-field="region"]');
+            regionCell.value = course.region;
+            regionCell.classList.add('auto-fill');
+            
+            showMessage('info', `${course.name} (${course.region}) 선택됨`);
+            
+            // 다음 필드로 포커스 이동
+            setTimeout(() => {
+                focusNextField(inputEl);
+            }, 100);
+        }
+
+        // 날짜 자동 완성 (MMDD → YYYY-MM-DD)
+        function autoCompleteDate(inputEl) {
+            let value = inputEl.value.replace(/\D/g, ''); // 숫자만 추출
+            
+            if (value.length === 4) {
+                const currentYear = new Date().getFullYear();
+                const month = value.substring(0, 2);
+                const day = value.substring(2, 4);
+                
+                if (month >= '01' && month <= '12' && day >= '01' && day <= '31') {
+                    const fullDate = `${currentYear}-${month}-${day}`;
+                    inputEl.value = fullDate;
+                    inputEl.classList.add('auto-complete');
+                    
+                    setTimeout(() => {
+                        inputEl.classList.remove('auto-complete');
+                    }, 500);
+                    
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // 인원수 기반 부킹/조인 자동 결정
+        function determineBookingType(players) {
+            const numPlayers = parseInt(players);
+            
+            if (numPlayers === 4) {
+                return 'BOOKING';
+            } else if (numPlayers >= 1 && numPlayers < 4) {
+                return 'JOIN';
+            }
+            
+            return '';
+        }
+
+        // 다음 필드로 포커스 이동
+        function focusNextField(currentEl) {
+            const row = currentEl.closest('tr');
+            const fields = row.querySelectorAll('.cell-input, .cell-select, .action-btn');
+            const currentIndex = Array.from(fields).indexOf(currentEl);
+            
+            if (currentIndex < fields.length - 1) {
+                fields[currentIndex + 1].focus();
+            }
+        }
+
+        // 이전 필드로 포커스 이동
+        function focusPreviousField(currentEl) {
+            const row = currentEl.closest('tr');
+            const fields = row.querySelectorAll('.cell-input, .cell-select, .action-btn');
+            const currentIndex = Array.from(fields).indexOf(currentEl);
+            
+            if (currentIndex > 0) {
+                fields[currentIndex - 1].focus();
+            }
+        }
+
+        // 새로운 행 추가
+        function addNewRow(insertAfter = null) {
+            rowCounter++;
+            const tbody = document.getElementById('teeTimeBody');
+            const today = new Date().toISOString().split('T')[0];
+            
+            const row = document.createElement('tr');
+            row.className = 'editing';
+            row.dataset.rowId = rowCounter;
+            
+            // 이전 행의 골프장과 지역 정보 복사
+            let prevGolfCourse = '';
+            let prevRegion = '';
+            let prevCourseId = '';
+            
+            if (insertAfter) {
+                const prevGolfCourseEl = insertAfter.querySelector('[data-field="golfCourse"]');
+                const prevRegionEl = insertAfter.querySelector('[data-field="region"]');
+                
+                if (prevGolfCourseEl && prevRegionEl) {
+                    prevGolfCourse = prevGolfCourseEl.value;
+                    prevRegion = prevRegionEl.value;
+                    prevCourseId = prevGolfCourseEl.dataset.courseId || '';
+                }
+            }
+            
+            row.innerHTML = `
+                <td class="col-no">${rowCounter}</td>
+                <td class="col-region" style="display: none;">
+                    <input type="text" class="cell-input auto-fill" data-field="region" value="${prevRegion}" readonly>
+                </td>
+                <td class="col-golf-course">
+                    <div class="golf-course-input">
+                        <input type="text" class="cell-input" data-field="golfCourse" 
+                               value="${prevGolfCourse}" data-course-id="${prevCourseId}" 
+                               placeholder="골프장명 입력">
+                    </div>
+                </td>
+                <td class="col-date">
+                    <input type="text" class="cell-input" data-field="date" 
+                           placeholder="MMDD" maxlength="10">
+                </td>
+                <td class="col-time">
+                    <input type="text" class="cell-input" data-field="time" 
+                           placeholder="1030" maxlength="4">
+                </td>
+                <td class="col-green-fee">
+                    <input type="number" class="cell-input" data-field="greenFee" 
+                           step="0.1" min="0" placeholder="15.5">
+                </td>
+                <td class="col-players">
+                    <input type="number" class="cell-input" data-field="players" 
+                           min="1" max="4" placeholder="1-4">
+                </td>
+                <td class="col-request">
+                    <select class="cell-select" data-field="request">
+                        ${selectOptions.request.map(opt => 
+                            `<option value="${opt}" ${opt === defaultValues.request ? 'selected' : ''}>${opt}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td class="col-hole">
+                    <select class="cell-select" data-field="hole">
+                        ${selectOptions.hole.map(opt => 
+                            `<option value="${opt}" ${opt === defaultValues.hole ? 'selected' : ''}>${opt}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td class="col-caddy">
+                    <select class="cell-select" data-field="caddy">
+                        ${selectOptions.caddy.map(opt => 
+                            `<option value="${opt}" ${opt === defaultValues.caddy ? 'selected' : ''}>${opt}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td class="col-prepay">
+                    <select class="cell-select" data-field="prepay">
+                        ${selectOptions.prepay.map(opt => 
+                            `<option value="${opt}" ${opt === defaultValues.prepay ? 'selected' : ''}>${opt}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td class="col-meal">
+                    <select class="cell-select" data-field="meal">
+                        ${selectOptions.meal.map(opt => 
+                            `<option value="${opt}" ${opt === defaultValues.meal ? 'selected' : ''}>${opt}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td class="col-cart">
+                    <select class="cell-select" data-field="cart">
+                        ${selectOptions.cart.map(opt => 
+                            `<option value="${opt}" ${opt === defaultValues.cart ? 'selected' : ''}>${opt}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td class="col-other">
+                    <input type="text" class="cell-input" data-field="other" 
+                           placeholder="기타 내용">
+                </td>
+                <td class="col-actions">
+                    <button class="action-btn add" tabindex="0" onclick="addRowAfter(this)">추가</button>
+                    <button class="action-btn book" tabindex="0">예약</button>
+                    <button class="action-btn delete" tabindex="0" onclick="deleteRow(this)">삭제</button>
+                </td>
+            `;
+            
+            if (insertAfter) {
+                insertAfter.insertAdjacentElement('afterend', row);
+            } else {
+                tbody.appendChild(row);
+            }
+            
+            setupRowEventHandlers(row);
+            currentEditingRow = row;
+            
+            // 첫 번째 입력 필드에 포커스
+            const firstInput = row.querySelector('.cell-input, .cell-select');
+            if (firstInput) {
+                firstInput.focus();
+            }
+            
+            return row;
+        }
+
+        // 행 이벤트 핸들러 설정
+        function setupRowEventHandlers(row) {
+            const inputs = row.querySelectorAll('.cell-input, .cell-select');
+            
+            inputs.forEach((input, index) => {
+                const field = input.dataset.field;
+                
+                // 키보드 이벤트
+                input.addEventListener('keydown', (e) => {
+                    handleKeyDown(e, input);
+                });
+                
+                // 골프장 검색
+                if (field === 'golfCourse') {
+                    input.addEventListener('input', (e) => {
+                        const query = e.target.value;
+                        
+                        if (query.length >= 1) {
+                            const results = searchGolfCourses(query);
+                            showGolfCourseDropdown(input, results);
+                            
+                            // 정확한 골프장명 검증
+                            const validCourse = validateGolfCourse(query);
+                            if (validCourse) {
+                                input.dataset.courseId = validCourse.id;
+                                input.style.backgroundColor = '#e8f5e8'; // 유효한 골프장 표시
+                                
+                                // 지역 자동 입력
+                                const row = input.closest('tr');
+                                const regionCell = row.querySelector('[data-field="region"]');
+                                regionCell.value = validCourse.region;
+                                regionCell.classList.add('auto-fill');
+                            } else {
+                                input.dataset.courseId = '';
+                                input.style.backgroundColor = '#ffeaea'; // 유효하지 않은 골프장 표시
+                            }
+                        } else {
+                            const dropdown = input.parentElement.querySelector('.golf-course-dropdown');
+                            if (dropdown) dropdown.style.display = 'none';
+                            input.style.backgroundColor = '';
+                            input.dataset.courseId = '';
+                        }
+                    });
+                    
+                    input.addEventListener('blur', (e) => {
+                        setTimeout(() => {
+                            const dropdown = input.parentElement.querySelector('.golf-course-dropdown');
+                            if (dropdown) dropdown.style.display = 'none';
+                        }, 200);
+                    });
+                }
+                
+                // 날짜 자동완성
+                if (field === 'date') {
+                    input.addEventListener('blur', () => {
+                        if (input.value.length === 4) {
+                            autoCompleteDate(input);
+                        }
+                    });
+                }
+                
+                // 인원수 변경시 부킹타입 결정
+                if (field === 'players') {
+                    input.addEventListener('change', () => {
+                        const bookingType = determineBookingType(input.value);
+                        showMessage('info', `${input.value}명 → ${bookingType === 'BOOKING' ? '부킹' : '조인'}`);
+                    });
+                }
+                
+                
+                // 포커스 이벤트
+                input.addEventListener('focus', () => {
+                    currentFocusedCell = input;
+                    input.classList.add('cell-focused');
+                });
+                
+                input.addEventListener('blur', () => {
+                    input.classList.remove('cell-focused');
+                });
+            });
+            
+            // 관리 영역(버튼들)에 Enter 키 이벤트 추가
+            const actionButtons = row.querySelectorAll('.action-btn');
+            actionButtons.forEach(button => {
+                // 버튼에 tabindex 추가 (포커스 가능하도록)
+                if (!button.hasAttribute('tabindex')) {
+                    button.setAttribute('tabindex', '0');
+                }
+                
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === ' ') { // 스페이스바로 변경
+                        e.preventDefault();
+                        
+                        const currentRow = button.closest('tr');
+                        
+                        // 이미 저장 처리 중인지 확인 (중복 방지)
+                        if (currentRow.dataset.saving === 'true') {
+                            return;
+                        }
+                        
+                        // 저장 중 플래그 설정
+                        currentRow.dataset.saving = 'true';
+                        
+                        // 행을 editing 상태로 설정 (saveCurrentRow를 위해)
+                        currentRow.classList.add('editing');
+                        currentEditingRow = currentRow;
+                        
+                        console.log('🚀 스페이스바에서 saveCurrentRow 호출...');
+                        
+                        // 실제 저장 함수 호출
+                        const success = await saveCurrentRow();
+                        
+                        if (success) {
+                            console.log('✅ saveCurrentRow 성공');
+                            
+                            // 시각적 피드백
+                            button.style.backgroundColor = '#28a745';
+                            button.style.color = '#ffffff';
+                            setTimeout(() => {
+                                button.style.backgroundColor = '';
+                                button.style.color = '';
+                            }, 1000);
+                            
+                            // 새로운 행 추가 및 포커스 이동
+                            const newRow = addNewRow(currentRow);
+                            
+                            // 새 행의 골프장 필드에 포커스
+                            setTimeout(() => {
+                                const newGolfCourseInput = newRow.querySelector('[data-field="golfCourse"]');
+                                if (newGolfCourseInput) {
+                                    newGolfCourseInput.focus();
+                                }
+                            }, 200);
+                        } else {
+                            console.log('❌ saveCurrentRow 실패');
+                            // 실패한 경우 시각적 피드백
+                            button.style.backgroundColor = '#dc3545';
+                            button.style.color = '#ffffff';
+                            setTimeout(() => {
+                                button.style.backgroundColor = '';
+                                button.style.color = '';
+                            }, 1000);
+                        }
+                        
+                        // 저장 플래그 해제
+                        currentRow.dataset.saving = 'false';
+                    }
+                });
+                
+                // 포커스 스타일 추가
+                button.addEventListener('focus', () => {
+                    button.style.outline = '2px solid #007bff';
+                });
+                
+                button.addEventListener('blur', () => {
+                    button.style.outline = '';
+                });
+            });
+        }
+
+        // 행 데이터 수집 함수
+        function collectRowData(row) {
+            const data = {};
+            const inputs = row.querySelectorAll('.cell-input, .cell-select');
+            
+            inputs.forEach(input => {
+                const field = input.dataset.field;
+                data[field] = input.value;
+                
+                if (field === 'golfCourse' && input.dataset.courseId) {
+                    data.courseId = input.dataset.courseId;
+                }
+            });
+            
+            return data;
+        }
+
+        // 드롭다운 선택 상태 업데이트
+        function updateDropdownSelection(items) {
+            items.forEach((item, index) => {
+                if (index === currentDropdownIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        // 키보드 이벤트 처리
+        function handleKeyDown(e, input) {
+            // 골프장 필드에서 드롭다운이 표시된 경우 방향키 처리
+            if (input.dataset.field === 'golfCourse') {
+                const dropdown = input.parentElement.querySelector('.golf-course-dropdown');
+                if (dropdown && dropdown.style.display === 'block') {
+                    const items = dropdown.querySelectorAll('.dropdown-item');
+                    
+                    switch (e.key) {
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            currentDropdownIndex = Math.min(currentDropdownIndex + 1, items.length - 1);
+                            updateDropdownSelection(items);
+                            return;
+                            
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            currentDropdownIndex = Math.max(currentDropdownIndex - 1, -1);
+                            updateDropdownSelection(items);
+                            return;
+                            
+                        case 'Enter':
+                            e.preventDefault();
+                            if (currentDropdownIndex >= 0 && items[currentDropdownIndex]) {
+                                const selectedItem = items[currentDropdownIndex];
+                                const courseData = currentDropdownResults[currentDropdownIndex];
+                                selectGolfCourse(input, courseData);
+                                dropdown.style.display = 'none';
+                                currentDropdownIndex = -1;
+                                return;
+                            }
+                            break;
+                            
+                        case 'Escape':
+                            e.preventDefault();
+                            dropdown.style.display = 'none';
+                            currentDropdownIndex = -1;
+                            return;
+                    }
+                }
+            }
+            
+            switch (e.key) {
+                case 'Tab':
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        focusPreviousField(input);
+                    } else {
+                        focusNextField(input);
+                    }
+                    break;
+                    
+                case ' ': // Space
+                    if (input.tagName === 'SELECT') {
+                        e.preventDefault();
+                        const currentIndex = input.selectedIndex;
+                        const nextIndex = (currentIndex + 1) % input.options.length;
+                        input.selectedIndex = nextIndex;
+                        
+                        // 선입금에서 스페이스바 누르면 식사로 바로 이동
+                        if (input.dataset.field === 'prepay') {
+                            focusNextField(input);
+                        }
+                    }
+                    // INPUT 필드에서는 스페이스바가 일반 문자 입력으로만 작동
+                    break;
+                    
+                case 'Escape':
+                    e.preventDefault();
+                    cancelCurrentRow();
+                    break;
+            }
+        }
+
+        // 현재 행 저장 (로컬 저장)
+        async function saveCurrentRow() {
+            // 현재 활성화된 행 찾기
+            const editingRow = document.querySelector('#teeTimeBody tr.editing');
+            if (!editingRow) {
+                console.log('편집 중인 행을 찾을 수 없습니다');
+                return false;
+            }
+            
+            const rowData = collectRowData(editingRow);
+            
+            // 유효성 검증
+            const validation = validateRowData(rowData);
+            if (!validation.valid) {
+                showMessage('error', validation.message);
+                return false;
+            }
+            
+            console.log('저장할 데이터:', rowData);
+            
+            // 저장 상태 표시
+            editingRow.classList.add('saving');
+            
+            try {
+                console.log('📝 localStorage 저장 시작...');
+                
+                // 로컬 저장 (임시)
+                const teeTimeId = 'local_' + Date.now();
+                console.log('🆔 생성된 ID:', teeTimeId);
+                
+                // 저장된 티타임 데이터
+                const savedTeeTime = {
+                    id: teeTimeId,
+                    ...rowData,
+                    savedAt: new Date().toISOString()
+                };
+                console.log('💾 저장할 데이터:', savedTeeTime);
+                
+                // localStorage에 저장
+                console.log('🔄 기존 localStorage 데이터 읽기...');
+                const savedTimes = JSON.parse(localStorage.getItem('savedTeeTimes') || '[]');
+                console.log('📋 기존 데이터 개수:', savedTimes.length);
+                
+                savedTimes.push(savedTeeTime);
+                console.log('➕ 새 데이터 추가 후 개수:', savedTimes.length);
+                
+                localStorage.setItem('savedTeeTimes', JSON.stringify(savedTimes));
+                console.log('✅ localStorage 저장 완료');
+                
+                // 저장 확인
+                const verification = JSON.parse(localStorage.getItem('savedTeeTimes') || '[]');
+                console.log('🔍 저장 확인 - 현재 개수:', verification.length);
+                
+                // 행 상태 업데이트
+                editingRow.classList.remove('editing', 'saving');
+                editingRow.classList.add('saved');
+                editingRow.dataset.teeTimeId = teeTimeId;
+                console.log('🏷️ 행 상태 업데이트 완료');
+                
+                // 총 개수 업데이트
+                totalTeeTimeCount++;
+                updateTotalCount();
+                console.log('📊 총 개수 업데이트 완료:', totalTeeTimeCount);
+                
+                showMessage('success', '티타임이 저장되었습니다!');
+                
+                // 매트릭스 뷰 업데이트 (index.html에서 사용)
+                try {
+                    updateMatrixView(savedTeeTime);
+                    console.log('🔄 매트릭스 뷰 업데이트 완료');
+                } catch (matrixError) {
+                    console.warn('매트릭스 뷰 업데이트 중 오류 (무시됨):', matrixError);
+                }
+                
+                console.log('✨ saveCurrentRow 함수 성공적으로 완료');
+                return true;
+                
+            } catch (error) {
+                console.error('저장 오류:', error);
+                showMessage('error', '저장 중 오류가 발생했습니다.');
+                return false;
+            } finally {
+                editingRow.classList.remove('saving');
+            }
+        }
+        
+        // 매트릭스 뷰 업데이트 함수
+        function updateMatrixView(teeTime) {
+            // 메인 페이지의 매트릭스 업데이트를 위한 이벤트 발생
+            window.dispatchEvent(new CustomEvent('teeTimeAdded', {
+                detail: teeTime
+            }));
+        }
+
+        // 행 데이터 수집
+        function collectRowData(row) {
+            const golfCourseEl = row.querySelector('[data-field="golfCourse"]');
+            const regionEl = row.querySelector('[data-field="region"]');
+            const dateEl = row.querySelector('[data-field="date"]');
+            const timeEl = row.querySelector('[data-field="time"]');
+            const greenFeeEl = row.querySelector('[data-field="greenFee"]');
+            const playersEl = row.querySelector('[data-field="players"]');
+            const requestEl = row.querySelector('[data-field="request"]');
+            const holeEl = row.querySelector('[data-field="hole"]');
+            const caddyEl = row.querySelector('[data-field="caddy"]');
+            const prepayEl = row.querySelector('[data-field="prepay"]');
+            const mealEl = row.querySelector('[data-field="meal"]');
+            const cartEl = row.querySelector('[data-field="cart"]');
+            const otherEl = row.querySelector('[data-field="other"]');
+            
+            const players = parseInt(playersEl.value) || 1;
+            const bookingType = determineBookingType(players);
+            
+            // 시간 포맷 변환 (1030 → 10:30)
+            const timeValue = timeEl ? timeEl.value : '';
+            let formattedTime = '09:00'; // 기본값
+            if (timeValue && timeValue.length >= 3) {
+                const hours = timeValue.substring(0, timeValue.length - 2).padStart(2, '0');
+                const minutes = timeValue.substring(timeValue.length - 2);
+                formattedTime = `${hours}:${minutes}`;
+            }
+            
+            return {
+                골프장명: golfCourseEl ? golfCourseEl.value : '',
+                골프장_id: parseInt(golfCourseEl ? golfCourseEl.dataset.courseId : '0') || 0,
+                지역: regionEl ? regionEl.value : '',
+                날짜: dateEl ? dateEl.value : '',
+                티타임: formattedTime,
+                티업시간_원본: timeValue,
+                그린피: parseFloat(greenFeeEl ? greenFeeEl.value : '0') || 0,
+                인원: players,
+                요청사항: requestEl ? requestEl.value : '',
+                홀선택: holeEl ? holeEl.value : '',
+                캐디: caddyEl ? caddyEl.value : '',
+                선입금: prepayEl ? prepayEl.value : '',
+                식사: mealEl ? mealEl.value : '',
+                카트비포함: cartEl ? cartEl.value : '',
+                기타: otherEl ? otherEl.value : '',
+                유형: 'DAILY',
+                예약유형: bookingType
+            };
+        }
+
+        // 데이터 유효성 검증
+        function validateRowData(data) {
+            if (!data.골프장_id || isNaN(data.골프장_id)) {
+                return { valid: false, message: '골프장을 선택해주세요.' };
+            }
+            
+            if (!data.날짜 || !data.날짜.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return { valid: false, message: '올바른 날짜 형식을 입력해주세요 (MMDD).' };
+            }
+            
+            if (!data.그린피 || isNaN(data.그린피) || data.그린피 <= 0) {
+                return { valid: false, message: '올바른 그린피를 입력해주세요.' };
+            }
+            
+            if (!data.인원 || isNaN(data.인원) || data.인원 < 1 || data.인원 > 4) {
+                return { valid: false, message: '인원은 1-4명 사이여야 합니다.' };
+            }
+            
+            return { valid: true };
+        }
+
+        // 현재 행 취소
+        function cancelCurrentRow() {
+            if (currentEditingRow) {
+                const rowId = currentEditingRow.dataset.rowId;
+                const teeTimeId = currentEditingRow.dataset.teeTimeId;
+                
+                if (!teeTimeId) {
+                    // 저장되지 않은 새 행이면 삭제
+                    currentEditingRow.remove();
+                    showMessage('info', '입력이 취소되었습니다.');
+                } else {
+                    // 저장된 행이면 편집 모드만 해제
+                    currentEditingRow.classList.remove('editing');
+                    showMessage('info', '편집이 취소되었습니다.');
+                }
+                
+                currentEditingRow = null;
+            }
+        }
+
+        // 행 추가 (버튼 클릭)
+        function addRowAfter(btn) {
+            const currentRow = btn.closest('tr');
+            addNewRow(currentRow);
+        }
+
+        // 행 삭제
+        function deleteRow(btn) {
+            const row = btn.closest('tr');
+            const teeTimeId = row.dataset.teeTimeId;
+            
+            if (confirm('이 행을 삭제하시겠습니까?')) {
+                if (teeTimeId) {
+                    // DB에서 삭제 (실제 구현 필요)
+                    totalTeeTimeCount--;
+                    updateTotalCount();
+                }
+                
+                row.remove();
+                showMessage('success', '행이 삭제되었습니다.');
+            }
+        }
+
+        // 총 개수 업데이트
+        function updateTotalCount() {
+            document.getElementById('totalCount').textContent = totalTeeTimeCount;
+        }
+
+        // 초기화
+        window.addEventListener('load', async function() {
+            await loadGolfCourses();
+            
+            // 첫 번째 행 추가
+            addNewRow();
+            
+            // 페이지 로드 후 골프장 필드에 자동 포커스
+            setTimeout(() => {
+                const firstGolfCourseInput = document.querySelector('#teeTimeBody tr [data-field="golfCourse"]');
+                if (firstGolfCourseInput) {
+                    firstGolfCourseInput.focus();
+                    console.log('🎯 골프장 입력 필드에 자동 포커스 설정');
+                }
+            }, 500); // 행 생성 후 충분한 시간 대기
+            
+            showMessage('info', '키보드로 빠르게 입력하세요! Tab으로 이동, Enter로 저장');
+        });
+
+        // 전역 키보드 이벤트
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+Enter: 강제 저장
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                if (currentEditingRow) {
+                    saveCurrentRow();
+                }
+            }
+        });
+    </script>
+    </div> <!-- container end -->
+</body>
+</html>

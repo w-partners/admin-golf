@@ -5,18 +5,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 This is a **골프장 예약 관리 시스템 (Golf Course Reservation Management System)** - a comprehensive platform for golf course reservation intermediaries managing multiple golf courses with centralized booking and performance tracking.
+-**절대로 하드코딩 불가**
+-**정적인 데이터 생성불가. 동적으로 구성할것**
+-**모든 데이터베이스 수정은 인라인수정방식으로 구현할것**
 
 **Tech Stack:**
-- Next.js 15 + TypeScript (App Router)
-- shadcn/ui + Tailwind CSS
-- Prisma ORM + PostgreSQL
-- NextAuth.js (phone-based authentication)
+- HTML/CSS
+- POSTGRESQL
 - Playwright for testing
 
 ## Architecture
 
 ## 포트 설정 : 절대 변경 불가.
-- 사이트의 포트는 3007
+- 사이트의 포트는 8080
 - 데이터베이스의 포트는 5555
 
 ## 한글 사용 원칙 (중요!)
@@ -111,6 +112,12 @@ This is a **골프장 예약 관리 시스템 (Golf Course Reservation Managemen
 [티타임:모두] [티타임등록:매니저이상] [골프장리스트/등록:관리자이상] [실적등록:매니저이상] [회원관리:관리자이상]
 ```
 
+## 데이터 흐름
+
+골프장 리스트에 등록된 골프장이 티타임에 노출됨
+해당 골프장의 지역을 대분류로 골프장 리스트가 나옴.
+골프장 등록 ->티타임에 골프장 팅출 -> 티타임 등록 -> 티타임에 해당 지역, 골프장의 아니 서버 1,2,3부에 맞게 숫자가 카운팅
+
 ### Matrix View Layout
 ```
 [데일리부킹] [데일리조인] [패키지부킹] [패키지조인]
@@ -160,66 +167,6 @@ Current test file: `smoke.stealth.spec.ts` - Basic smoke test that:
 - Super Admin: `01034424668` / `admin1234`
 - Various role accounts: `010********` / `admin`
 
-## File Structure (Planned)
-
-### Pages Structure
-```
-app/
-├── layout.tsx                    # Global header + quick menu
-├── page.tsx                      # Dashboard (권한별 차별화)
-├── login/page.tsx               # 연락처 기반 로그인
-├── tee-times/
-│   ├── page.tsx                 # Matrix view (4 tabs)
-│   ├── [golfCourse]/[date]/page.tsx # 상세 티타임 목록
-│   ├── new/page.tsx            # 티타임 등록 (매니저이상)
-│   └── [id]/page.tsx           # 티타임 상세/수정
-├── golf-courses/
-│   ├── page.tsx                 # 골프장 리스트
-│   ├── new/page.tsx            # 골프장 등록 (관리자이상)
-│   └── [id]/page.tsx           # 골프장 상세/수정
-├── performance/
-│   └── page.tsx                 # 완료된 티타임 실적등록
-├── members/
-│   ├── page.tsx                 # 회원 리스트 (관리자이상)
-│   ├── new/page.tsx            # 회원 등록
-│   └── [id]/page.tsx           # 회원 상세/수정
-├── notices/
-│   └── page.tsx                 # 시스템 공지사항
-└── unauthorized/                # 권한 부족 페이지
-```
-
-### Components Structure
-```
-components/
-├── tee-time/
-│   ├── MatrixView.tsx          # 4탭 매트릭스 뷰
-│   ├── MatrixTable.tsx         # 스크롤 테이블 (sticky columns)
-│   ├── TeeTimeDetailList.tsx   # 선택 골프장/날짜 상세 목록
-│   ├── ReservationTimer.tsx    # 10분 카운트다운
-│   └── ConnectedTeeTimeForm.tsx # 연결 티타임 (숙박 정보)
-├── golf-course/
-│   └── GolfCourseForm.tsx      # 골프장 등록/수정 폼
-├── performance/
-│   └── PerformanceList.tsx     # 완료된 티타임 리스트
-├── layout/
-│   ├── GlobalHeader.tsx        # 로고, 프로필, 로그인/아웃
-│   ├── QuickMenu.tsx           # 권한별 메뉴 표시
-│   └── MobileNav.tsx           # 모바일 반응형 네비
-└── ui/ (shadcn/ui components)
-```
-
-### Database Models
-```
-prisma/
-├── schema.prisma               # 모든 모델 정의
-│   ├── User (팀 구조 포함)
-│   ├── Team (팀장-팀원 관계)
-│   ├── GolfCourse (8개 지역)
-│   ├── TeeTime (연결 티타임, 숙박 정보)
-│   ├── SystemConfig (동적 설정)
-│   └── Notice (공지사항)
-└── seed.ts                     # 초기 계정 + 설정값
-```
 
 ## Key Business Rules
 
@@ -238,17 +185,3 @@ prisma/
 - Middleware-based route protection
 - API-level permission validation
 - No sensitive data in logs
-
-## Performance Optimizations
-
-- Next.js App Router with SSR
-- Prisma query optimization
-- Redis caching for matrix data (planned)
-- Component-level caching strategies
-- Mobile-responsive design
-
-## MCP Integration
-
-Project uses shadcn MCP server for UI component generation:
-- Remote MCP: `https://www.shadcn.io/api/mcp`
-- Enables dynamic component creation with design system consistency

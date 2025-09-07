@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<!-- ================================================================ -->
+<!-- 파일: login.html (로그인 페이지) -->
+<!-- 설명: 사용자 로그인 페이지 (연락처 기반 로그인) -->
+<!-- 기능: 연락처 + 비밀번호 로그인, 퀵로그인 버튼 -->
+<!-- ================================================================ -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>골프장 예약 관리 시스템 - 로그인</title>
+    <!-- ============ CSS 스타일 섹션 시작 ============ -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .phone-input {
+            font-family: monospace;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fcc;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #cfc;
+            display: none;
+        }
+
+        .test-accounts {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .test-accounts h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .test-accounts .account {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .test-accounts .account:last-child {
+            border-bottom: none;
+        }
+
+        .test-accounts .phone {
+            font-family: monospace;
+            color: #666;
+        }
+
+        .test-accounts .role {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .quick-login-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quick-login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+
+        .quick-login-btn .phone {
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .quick-login-btn .role {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            
+            .login-header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+    <!-- ============ CSS 스타일 섹션 끝 ============ -->
+</head>
+<body>
+    <!-- ============ HTML BODY 섹션 시작 ============ -->
+    <!-- ============ 로그인 컨테이너 섹션 ============ -->
+    <div class="login-container">
+        <!-- ============ 로그인 헤더 영역 ============ -->
+        <div class="login-header">
+            <h1>🏌️ 골프장 예약 관리</h1>
+            <p>연락처와 비밀번호로 로그인하세요</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        <div class="loading" id="loading">로그인 중...</div>
+
+        <!-- ============ 로그인 폼 영역 ============ -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="phone">연락처</label>
+                <input type="tel" id="phone" class="form-input phone-input" placeholder="010-1234-5678" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">로그인</button>
+        </form>
+
+        <!-- ============ 테스트 계정 퀵로그인 영역 ============ -->
+        <div class="test-accounts" id="testAccounts" style="display: none;">
+            <h3>🚀 퀵 로그인 (테스트용)</h3>
+            <div id="accountsList"></div>
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #999;">
+                💡 버튼을 클릭하면 바로 로그인됩니다
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ JavaScript 섹션 시작 ============ -->
+    <script>
+        // 연락처 자동 포맷팅
+        const phoneInput = document.getElementById('phone');
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length >= 11) {
+                value = value.slice(0, 11);
+            }
+            
+            if (value.length >= 7) {
+                value = value.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/(\d{3})(\d+)/, '$1-$2');
+            }
+            
+            e.target.value = value;
+        });
+
+        // 로그인 폼 처리
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const loading = document.getElementById('loading');
+        const loginBtn = document.getElementById('loginBtn');
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            loading.style.display = 'none';
+            loginBtn.disabled = false;
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            loading.style.display = 'none';
+        }
+
+        function showLoading() {
+            loading.style.display = 'block';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            loginBtn.disabled = true;
+        }
+
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!phone || !password) {
+                showError('연락처와 비밀번호를 모두 입력해주세요.');
+                return;
+            }
+
+            // 연락처 검증
+            const phoneRegex = /^010-\d{4}-\d{4}$/;
+            if (!phoneRegex.test(phone)) {
+                showError('올바른 연락처 형식으로 입력해주세요. (010-0000-0000)');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('http://localhost:8081/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showSuccess(`로그인 성공! ${result.user.name}님 (${result.user.account_type})`);
+                    
+                    // 세션 정보 저장
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    // 2초 후 메인 페이지로 이동
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    showError(result.error || '로그인에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                showError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+            }
+        });
+
+        // 테스트 계정 동적 로드
+        async function loadTestAccounts() {
+            try {
+                const response = await fetch('http://localhost:8081/api/users/test-accounts');
+                if (response.ok) {
+                    const accounts = await response.json();
+                    const accountsList = document.getElementById('accountsList');
+                    const testAccounts = document.getElementById('testAccounts');
+                    
+                    accountsList.innerHTML = '';
+                    
+                    accounts.forEach(account => {
+                        const quickLoginBtn = document.createElement('button');
+                        quickLoginBtn.className = 'quick-login-btn';
+                        quickLoginBtn.innerHTML = `
+                            <span class="phone">${account.phone}</span>
+                            <span class="role">${account.account_type}</span>
+                        `;
+                        
+                        // 클릭시 바로 로그인 실행
+                        quickLoginBtn.addEventListener('click', async function() {
+                            this.disabled = true;
+                            this.style.opacity = '0.7';
+                            this.innerHTML = '<span>로그인 중...</span>';
+                            
+                            try {
+                                const response = await fetch('http://localhost:8081/api/auth/login', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ 
+                                        phone: account.phone, 
+                                        password: 'admin1234' 
+                                    })
+                                });
+
+                                const result = await response.json();
+
+                                if (response.ok) {
+                                    showSuccess(`${account.account_type} 퀵 로그인 성공! ${result.user.name}님`);
+                                    
+                                    // 세션 정보 저장
+                                    localStorage.setItem('user', JSON.stringify(result.user));
+                                    
+                                    // 1초 후 메인 페이지로 이동
+                                    setTimeout(() => {
+                                        window.location.href = '/';
+                                    }, 1000);
+                                } else {
+                                    showError(`퀵 로그인 실패: ${result.error}`);
+                                    // 버튼 복원
+                                    this.disabled = false;
+                                    this.style.opacity = '1';
+                                    this.innerHTML = `
+                                        <span class="phone">${account.phone}</span>
+                                        <span class="role">${account.account_type}</span>
+                                    `;
+                                }
+                            } catch (error) {
+                                console.error('퀵 로그인 오류:', error);
+                                showError('퀵 로그인 중 오류가 발생했습니다.');
+                                // 버튼 복원
+                                this.disabled = false;
+                                this.style.opacity = '1';
+                                this.innerHTML = `
+                                    <span class="phone">${account.phone}</span>
+                                    <span class="role">${account.account_type}</span>
+                                `;
+                            }
+                        });
+                        
+                        accountsList.appendChild(quickLoginBtn);
+                    });
+                    
+                    testAccounts.style.display = 'block';
+                } else {
+                    console.error('테스트 계정 로드 실패');
+                }
+            } catch (error) {
+                console.error('테스트 계정 로드 오류:', error);
+            }
+        }
+
+        // 페이지 로드시 기존 세션 확인 및 테스트 계정 로드
+        window.addEventListener('load', function() {
+            // 기존 세션 확인
+            const user = localStorage.getItem('user');
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    showSuccess(`이미 로그인되어 있습니다. ${userData.name}님 (${userData.account_type})`);
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                    return;
+                } catch (error) {
+                    localStorage.removeItem('user');
+                }
+            }
+            
+            // 테스트 계정 로드
+            loadTestAccounts();
+        });
+    </script>
+    <!-- ============ JavaScript 섹션 끝 ============ -->
+</body>
+<!-- ============ HTML 문서 끝 ============ -->
+</html>
