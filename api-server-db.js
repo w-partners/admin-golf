@@ -58,6 +58,9 @@ const server = http.createServer(async (req, res) => {
   const pathname = parsedUrl.pathname;
   const method = req.method;
 
+  // 요청 로깅
+  console.log(`📨 API 요청: ${method} ${pathname} ${JSON.stringify(parsedUrl.query)}`);
+
   // CORS 헤더 설정
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -175,9 +178,9 @@ const server = http.createServer(async (req, res) => {
         paramIndex++;
       }
 
-      // 날짜 필터
+      // 날짜 필터 (timestamp 필드를 날짜 문자열과 비교)
       if (query.date) {
-        sqlQuery += ` AND date = $${paramIndex}`;
+        sqlQuery += ` AND DATE(date) = $${paramIndex}`;
         params.push(query.date);
         paramIndex++;
       }
@@ -195,18 +198,26 @@ const server = http.createServer(async (req, res) => {
         sqlQuery += ` AND booking_type = $${paramIndex}`;
         params.push(typeFilter);
         paramIndex++;
+        
+        console.log(`🎯 타입 필터 적용: ${query.type} → ${typeFilter}`);
       }
 
       sqlQuery += ' ORDER BY date, time';
 
       const result = await db.query(sqlQuery, params);
       
-      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify({
+      console.log(`✅ 티타임 조회 결과: ${result.rows.length}건`);
+      console.log(`🔍 실행된 쿼리: ${sqlQuery}`);
+      console.log(`📋 쿼리 파라미터:`, params);
+      
+      const responseData = {
         success: true,
         data: result.rows,
         count: result.rows.length
-      }));
+      };
+      
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify(responseData));
       return;
     }
 
@@ -272,10 +283,15 @@ const server = http.createServer(async (req, res) => {
       
       // 2. 모든 티타임 조회하여 카운트 계산
       const teeTimesResult = await db.query(`
-        SELECT golf_course_name, region, date, time_part, COUNT(*) as count
+        SELECT golf_course_name, region, DATE(date)::text as date_only, time_part, COUNT(*) as count
         FROM tee_times 
-        GROUP BY golf_course_name, region, date, time_part
+        GROUP BY golf_course_name, region, DATE(date), time_part
       `);
+
+      console.log('🔍 매트릭스 집계 데이터:');
+      teeTimesResult.rows.forEach(row => {
+        console.log(`  - ${row.region}/${row.golf_course_name} ${row.date_only} ${row.time_part}: ${row.count}건`);
+      });
 
       // 3. 매트릭스 데이터 구조 생성 (90일치)
       const matrix = {};
@@ -306,12 +322,17 @@ const server = http.createServer(async (req, res) => {
       // 4. 실제 티타임 카운트 적용
       teeTimesResult.rows.forEach(teeTime => {
         const courseKey = `${teeTime.region}_${teeTime.golf_course_name}`;
-        const dateStr = teeTime.date.toISOString().split('T')[0];
+        const dateStr = teeTime.date_only; // PostgreSQL DATE() 함수로 이미 YYYY-MM-DD 형식
+        
+        console.log(`🎯 매칭 시도: ${courseKey} - ${dateStr} - ${teeTime.time_part}`);
         
         if (matrix[courseKey] && matrix[courseKey].dates[dateStr]) {
           const partKey = teeTime.time_part === '1부' ? 'part1' : 
                          teeTime.time_part === '2부' ? 'part2' : 'part3';
           matrix[courseKey].dates[dateStr][partKey] = parseInt(teeTime.count);
+          console.log(`✅ 매칭 성공: ${courseKey}.${dateStr}.${partKey} = ${teeTime.count}`);
+        } else {
+          console.log(`❌ 매칭 실패: ${courseKey} not found or ${dateStr} not in range`);
         }
       });
 

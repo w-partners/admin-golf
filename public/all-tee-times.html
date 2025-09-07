@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전체 티타임 관리 - 골프장 예약 관리 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.4;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c5282 0%, #2b6cb0 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .controls-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #495057;
+            margin-right: 5px;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 120px;
+            background: white;
+        }
+
+        .stats-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stats-item {
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stats-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .refresh-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #218838;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #007bff;
+            font-weight: bold;
+            color: #495057;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .sort-btn {
+            background: none;
+            border: 1px solid #007bff;
+            color: #007bff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .sort-btn:hover, .sort-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .region-badge {
+            background: #6c757d;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .time-badge {
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .time-part-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .time-part-1 { background: #e3f2fd; color: #1565c0; }
+        .time-part-2 { background: #fff3e0; color: #ef6c00; }
+        .time-part-3 { background: #fce4ec; color: #c2185b; }
+
+        .type-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .type-booking {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .type-join {
+            background: #fff8e1;
+            color: #f57c00;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .status-available { background: #e8f5e8; color: #2e7d32; }
+        .status-reserved { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #cce5ff; color: #0056b3; }
+        .status-completed { background: #d1ecf1; color: #0c5460; }
+
+        .green-fee {
+            font-weight: bold;
+            color: #e91e63;
+        }
+
+        .players-count {
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .table-scroll {
+                font-size: 11px;
+            }
+            
+            th, td {
+                padding: 6px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>전체 티타임 관리</h1>
+        <div class="subtitle">골프장 예약 관리 시스템 - 모든 티타임 정보</div>
+    </div>
+
+    <div class="container">
+        <!-- 검색 및 필터 컨트롤 -->
+        <div class="controls">
+            <div class="controls-row">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="골프장명, 요청사항 등으로 검색...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                
+                <div class="filter-group">
+                    <label>지역:</label>
+                    <select id="region-filter" class="filter-select">
+                        <option value="">전체</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>시간대:</label>
+                    <select id="timepart-filter" class="filter-select">
+                        <option value="">전체</option>
+                        <option value="1부">1부</option>
+                        <option value="2부">2부</option>
+                        <option value="3부">3부</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>타입:</label>
+                    <select id="type-filter" class="filter-select">
+                        <option value="">전체</option>
+                        <option value="부킹">부킹</option>
+                        <option value="조인">조인</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="controls-row">
+                <div class="filter-group">
+                    <label>상태:</label>
+                    <select id="status-filter" class="filter-select">
+                        <option value="">전체</option>
+                        <option value="AVAILABLE">예약가능</option>
+                        <option value="RESERVED">예약됨</option>
+                        <option value="CONFIRMED">확정됨</option>
+                        <option value="COMPLETED">완료됨</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>날짜:</label>
+                    <input type="date" id="date-filter" class="filter-select">
+                </div>
+                
+                <button class="refresh-btn" onclick="loadAllTeeTimeData()">
+                    🔄 새로고침
+                </button>
+            </div>
+        </div>
+
+        <!-- 통계 표시 -->
+        <div class="stats-bar">
+            <div class="stats-item">
+                <div class="stats-number" id="total-count">-</div>
+                <div class="stats-label">총 티타임</div>
+            </div>
+            <div class="stats-item">
+                <div class="stats-number" id="booking-count">-</div>
+                <div class="stats-label">부킹</div>
+            </div>
+            <div class="stats-item">
+                <div class="stats-number" id="join-count">-</div>
+                <div class="stats-label">조인</div>
+            </div>
+            <div class="stats-item">
+                <div class="stats-number" id="available-count">-</div>
+                <div class="stats-label">예약가능</div>
+            </div>
+            <div class="stats-item">
+                <div class="stats-number" id="avg-fee">-</div>
+                <div class="stats-label">평균 그린피</div>
+            </div>
+        </div>
+
+        <!-- 테이블 -->
+        <div class="table-container">
+            <div class="table-header">
+                <div>전체 티타임 목록 (<span id="filtered-count">0</span>건)</div>
+                <div class="sort-controls">
+                    <span style="font-size: 12px; margin-right: 10px;">정렬:</span>
+                    <button class="sort-btn active" onclick="sortBy('date')">날짜순</button>
+                    <button class="sort-btn" onclick="sortBy('golf_course_name')">골프장명</button>
+                    <button class="sort-btn" onclick="sortBy('region')">지역</button>
+                    <button class="sort-btn" onclick="sortBy('green_fee')">그린피</button>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <div id="loading-indicator" class="loading">
+                    <div class="spinner"></div>
+                    <div>티타임 데이터를 불러오는 중...</div>
+                </div>
+                
+                <table id="tee-times-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>지역</th>
+                            <th>골프장</th>
+                            <th>날짜</th>
+                            <th>시간</th>
+                            <th>그린피</th>
+                            <th>인원</th>
+                            <th>타입</th>
+                            <th>상태</th>
+                            <th>요청사항</th>
+                            <th>홀선택</th>
+                            <th>캐디</th>
+                            <th>선입금</th>
+                            <th>식사</th>
+                            <th>카트</th>
+                            <th>등록일</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tee-times-tbody">
+                        <!-- 동적으로 생성될 티타임 목록 -->
+                    </tbody>
+                </table>
+                
+                <!-- 데이터가 없을 때 표시 -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <div class="icon">🏌️</div>
+                    <h3>등록된 티타임이 없습니다</h3>
+                    <p>검색 조건을 변경하거나 새로운 티타임을 등록해보세요.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">이전</button>
+            <span class="page-info" id="page-info">1 / 1</span>
+            <button class="page-btn" id="next-btn" onclick="changePage(1)">다음</button>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let allTeeTimeData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let itemsPerPage = 50;
+        let currentSort = 'date';
+        let sortDirection = 'asc';
+
+        // 페이지 로드시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏌️ 전체 티타임 관리 페이지 초기화');
+            loadAllTeeTimeData();
+            setupEventListeners();
+        });
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 검색 이벤트
+            document.getElementById('search-input').addEventListener('input', debounce(filterData, 300));
+            
+            // 필터 이벤트
+            document.getElementById('region-filter').addEventListener('change', filterData);
+            document.getElementById('timepart-filter').addEventListener('change', filterData);
+            document.getElementById('type-filter').addEventListener('change', filterData);
+            document.getElementById('status-filter').addEventListener('change', filterData);
+            document.getElementById('date-filter').addEventListener('change', filterData);
+        }
+
+        // 디바운스 함수
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 모든 티타임 데이터 로드
+        async function loadAllTeeTimeData() {
+            try {
+                console.log('🔄 PostgreSQL에서 모든 티타임 데이터 로드 중...');
+                showLoading(true);
+
+                const response = await fetch('http://localhost:3001/api/tee-times');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    allTeeTimeData = result.data || [];
+                    
+                    console.log(`✅ 총 ${allTeeTimeData.length}건의 티타임 데이터 로드 완료`);
+                    
+                    // 지역 필터 옵션 업데이트
+                    updateRegionFilter();
+                    
+                    // 초기 필터링 및 표시
+                    filterData();
+                    updateStats();
+                } else {
+                    throw new Error(`API 호출 실패: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ 티타임 데이터 로드 실패:', error);
+                showEmptyState('데이터를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 지역 필터 옵션 업데이트
+        function updateRegionFilter() {
+            const regionSet = new Set();
+            allTeeTimeData.forEach(item => {
+                if (item.region) regionSet.add(item.region);
+            });
+            
+            const regionFilter = document.getElementById('region-filter');
+            const currentValue = regionFilter.value;
+            
+            regionFilter.innerHTML = '<option value="">전체</option>';
+            Array.from(regionSet).sort().forEach(region => {
+                regionFilter.innerHTML += `<option value="${region}">${region}</option>`;
+            });
+            
+            regionFilter.value = currentValue;
+        }
+
+        // 데이터 필터링
+        function filterData() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const regionFilter = document.getElementById('region-filter').value;
+            const timepartFilter = document.getElementById('timepart-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+
+            filteredData = allTeeTimeData.filter(item => {
+                // 텍스트 검색
+                if (searchTerm && !matchesSearch(item, searchTerm)) return false;
+                
+                // 지역 필터
+                if (regionFilter && item.region !== regionFilter) return false;
+                
+                // 시간대 필터
+                if (timepartFilter && item.time_part !== timepartFilter) return false;
+                
+                // 타입 필터
+                if (typeFilter && item.type !== typeFilter) return false;
+                
+                // 상태 필터
+                if (statusFilter && item.status !== statusFilter) return false;
+                
+                // 날짜 필터
+                if (dateFilter) {
+                    const itemDate = formatDate(item.date);
+                    if (itemDate !== dateFilter) return false;
+                }
+                
+                return true;
+            });
+
+            // 정렬 적용
+            sortData();
+            
+            // 첫 페이지로 리셋
+            currentPage = 1;
+            
+            // 테이블 업데이트
+            updateTable();
+            updatePagination();
+        }
+
+        // 검색 매칭
+        function matchesSearch(item, searchTerm) {
+            const searchFields = [
+                item.golf_course_name,
+                item.region,
+                item.requests,
+                item.hole_choice,
+                item.caddy,
+                item.others
+            ];
+            
+            return searchFields.some(field => 
+                field && field.toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // 데이터 정렬
+        function sortData() {
+            filteredData.sort((a, b) => {
+                let aVal = a[currentSort];
+                let bVal = b[currentSort];
+                
+                // 날짜 처리
+                if (currentSort === 'date') {
+                    aVal = new Date(aVal);
+                    bVal = new Date(bVal);
+                }
+                // 숫자 처리
+                else if (currentSort === 'green_fee') {
+                    aVal = parseFloat(aVal) || 0;
+                    bVal = parseFloat(bVal) || 0;
+                }
+                // 문자열 처리
+                else {
+                    aVal = String(aVal || '').toLowerCase();
+                    bVal = String(bVal || '').toLowerCase();
+                }
+
+                if (sortDirection === 'asc') {
+                    return aVal > bVal ? 1 : (aVal < bVal ? -1 : 0);
+                } else {
+                    return aVal < bVal ? 1 : (aVal > bVal ? -1 : 0);
+                }
+            });
+        }
+
+        // 정렬 기준 변경
+        function sortBy(field) {
+            if (currentSort === field) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort = field;
+                sortDirection = 'asc';
+            }
+            
+            // 정렬 버튼 상태 업데이트
+            document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            filterData();
+        }
+
+        // 테이블 업데이트
+        function updateTable() {
+            const tbody = document.getElementById('tee-times-tbody');
+            const table = document.getElementById('tee-times-table');
+            const emptyState = document.getElementById('empty-state');
+            const filteredCount = document.getElementById('filtered-count');
+            
+            filteredCount.textContent = filteredData.length;
+            
+            if (filteredData.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+            
+            // 페이지별 데이터 계산
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            tbody.innerHTML = pageData.map(item => {
+                return `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td><span class="region-badge">${item.region}</span></td>
+                        <td><strong>${item.golf_course_name}</strong></td>
+                        <td>${formatDate(item.date)}</td>
+                        <td>
+                            <span class="time-badge">${formatTime(item.time)}</span>
+                            <span class="time-part-badge time-part-${item.time_part?.charAt(0)}">${item.time_part}</span>
+                        </td>
+                        <td class="green-fee">${item.green_fee}만원</td>
+                        <td class="players-count">${item.players}명</td>
+                        <td><span class="type-badge type-${item.type === '부킹' ? 'booking' : 'join'}">${item.type}</span></td>
+                        <td><span class="status-badge status-${item.status?.toLowerCase()}">${getStatusText(item.status)}</span></td>
+                        <td title="${item.requests || ''}">${truncateText(item.requests, 20)}</td>
+                        <td>${item.hole_choice || '-'}</td>
+                        <td>${item.caddy || '-'}</td>
+                        <td>${item.prepaid ? '유' : '무'}</td>
+                        <td>${item.meal_included ? '포함' : '별도'}</td>
+                        <td>${item.cart_included ? '포함' : '별도'}</td>
+                        <td>${formatDateTime(item.created_at)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 페이지네이션 업데이트
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+            
+            pagination.style.display = 'flex';
+            pageInfo.textContent = `${currentPage} / ${totalPages}`;
+            
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+        }
+
+        // 페이지 변경
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                updateTable();
+                updatePagination();
+                
+                // 테이블 상단으로 스크롤
+                document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const totalCount = allTeeTimeData.length;
+            const bookingCount = allTeeTimeData.filter(item => item.type === '부킹').length;
+            const joinCount = allTeeTimeData.filter(item => item.type === '조인').length;
+            const availableCount = allTeeTimeData.filter(item => item.status === 'AVAILABLE').length;
+            
+            const totalFee = allTeeTimeData.reduce((sum, item) => sum + (parseFloat(item.green_fee) || 0), 0);
+            const avgFee = totalCount > 0 ? (totalFee / totalCount).toFixed(1) : 0;
+            
+            document.getElementById('total-count').textContent = totalCount.toLocaleString();
+            document.getElementById('booking-count').textContent = bookingCount.toLocaleString();
+            document.getElementById('join-count').textContent = joinCount.toLocaleString();
+            document.getElementById('available-count').textContent = availableCount.toLocaleString();
+            document.getElementById('avg-fee').textContent = avgFee + '만원';
+        }
+
+        // 로딩 상태 표시
+        function showLoading(show) {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const table = document.getElementById('tee-times-table');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (show) {
+                loadingIndicator.style.display = 'block';
+                table.style.display = 'none';
+                emptyState.style.display = 'none';
+            } else {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // 빈 상태 표시
+        function showEmptyState(message) {
+            const emptyState = document.getElementById('empty-state');
+            const table = document.getElementById('tee-times-table');
+            
+            emptyState.innerHTML = `
+                <div class="icon">⚠️</div>
+                <h3>데이터를 불러올 수 없습니다</h3>
+                <p>${message}</p>
+            `;
+            
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+        }
+
+        // 유틸리티 함수들
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '-';
+            return timeStr.substring(0, 5); // HH:MM
+        }
+
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr) return '-';
+            const date = new Date(dateTimeStr);
+            return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'AVAILABLE': '예약가능',
+                'RESERVED': '예약됨',
+                'CONFIRMED': '확정됨',
+                'COMPLETED': '완료됨'
+            };
+            return statusMap[status] || status;
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return '-';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+    </script>
+</body>
+</html>

@@ -15,6 +15,13 @@ function createQuickMenuHTML(currentPage = '') {
             permission: 'all'
         },
         {
+            id: 'all-tee-times',
+            text: '전체티타임리스트',
+            url: 'all-tee-times.html',
+            page: 'all-tee-times',
+            permission: 'all'
+        },
+        {
             id: 'tee-time-register',
             text: '티타임등록:매니저이상',
             url: 'tee-time-register.html',
@@ -281,6 +288,7 @@ function detectCurrentPage() {
     const pageMap = {
         'index.html': 'index',
         '': 'index',  // root path
+        'all-tee-times.html': 'all-tee-times',
         'golf-courses.html': 'golf-courses',
         'tee-time-register.html': 'tee-time-register',
         'golf-course-register.html': 'golf-courses',
