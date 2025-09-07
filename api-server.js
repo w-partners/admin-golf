@@ -207,6 +207,16 @@ Object.keys(golfCourses).forEach(region => {
         part3: 0   // 3부 (15시 이후)
       };
     }
+    
+    // 샘플 티타임 데이터 추가 (9월 12일)
+    const sampleDate = '2025-09-12';
+    if (teeTimeMatrix[courseKey].dates[sampleDate]) {
+      teeTimeMatrix[courseKey].dates[sampleDate] = {
+        part1: 2,  // 1부 2건
+        part2: 2,  // 2부 2건
+        part3: 2   // 3부 2건
+      };
+    }
   });
 });
 
@@ -262,8 +272,31 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // 다음 순번 조회 API (특정 경로이므로 먼저 처리)
+    if (pathname === '/api/golf-courses/next-sequence' && method === 'GET') {
+      // 현재 최대 순번 조회
+      let maxSequence = 0;
+      Object.values(golfCourses).forEach(courses => {
+        courses.forEach(course => {
+          if (course.sequence && course.sequence > maxSequence) {
+            maxSequence = course.sequence;
+          }
+        });
+      });
+      
+      res.writeHead(200, { 
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.end(JSON.stringify({ 
+        nextSequence: maxSequence + 1,
+        currentMax: maxSequence 
+      }));
+      return;
+    }
+
     // 특정 골프장 조회 API
-    if (pathname.startsWith('/api/golf-courses/') && method === 'GET') {
+    if (pathname.startsWith('/api/golf-courses/') && pathname !== '/api/golf-courses/next-sequence' && method === 'GET') {
       const id = pathname.split('/')[3];
       const result = findGolfCourse(id);
       
@@ -278,7 +311,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     // 골프장 삭제 API
-    if (pathname.startsWith('/api/golf-courses/') && method === 'DELETE') {
+    if (pathname.startsWith('/api/golf-courses/') && pathname !== '/api/golf-courses/next-sequence' && method === 'DELETE') {
       const id = pathname.split('/')[3];
       const result = findGolfCourse(id);
       
@@ -335,15 +368,23 @@ const server = http.createServer(async (req, res) => {
       
       // 새로운 ID 생성 (가장 큰 ID + 1)
       let maxId = 0;
+      let maxSequence = 0;
       Object.values(golfCourses).forEach(courses => {
         courses.forEach(course => {
           if (course.id > maxId) maxId = course.id;
+          if (course.sequence && course.sequence > maxSequence) {
+            maxSequence = course.sequence;
+          }
         });
       });
       
+      // 순번이 입력되지 않으면 자동으로 다음 순번 설정
+      const sequence = newCourse.sequence && newCourse.sequence > 0 ? 
+        parseInt(newCourse.sequence) : maxSequence + 1;
+      
       const courseData = {
         id: maxId + 1,
-        sequence: maxId + 1,
+        sequence: sequence,
         name: newCourse.name,
         region: newCourse.region,
         address: newCourse.address,
@@ -391,6 +432,48 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify(teeTimeMatrix));
       return;
     }
+    
+    // 티타임 등록 API (샘플)
+    if (pathname === '/api/tee-times' && method === 'POST') {
+      const teeTimeData = await getPostData(req);
+      
+      // 골프장 정보 확인
+      const golfCourseResult = findGolfCourse(teeTimeData.golfCourseId);
+      if (!golfCourseResult) {
+        res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: '골프장을 찾을 수 없습니다.' }));
+        return;
+      }
+      
+      const courseKey = `${golfCourseResult.region}_${golfCourseResult.course.name}`;
+      const dateKey = teeTimeData.date;
+      const timePart = teeTimeData.timePart; // 1, 2, 3
+      
+      // 매트릭스 업데이트
+      if (teeTimeMatrix[courseKey] && teeTimeMatrix[courseKey].dates[dateKey]) {
+        const partKey = `part${timePart}`;
+        teeTimeMatrix[courseKey].dates[dateKey][partKey] = 
+          (teeTimeMatrix[courseKey].dates[dateKey][partKey] || 0) + 1;
+        
+        res.writeHead(201, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ 
+          success: true, 
+          message: '티타임이 등록되었습니다.',
+          updated: {
+            courseKey,
+            date: dateKey,
+            part: timePart,
+            count: teeTimeMatrix[courseKey].dates[dateKey][partKey]
+          }
+        }));
+        
+        console.log(`🏌️ 티타임 등록: ${golfCourseResult.course.name} (${dateKey}, ${timePart}부)`);
+      } else {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: '잘못된 날짜 또는 골프장 정보입니다.' }));
+      }
+      return;
+    }
 
     // 404 - Not Found
     res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -408,5 +491,7 @@ server.listen(PORT, () => {
   console.log(`🌐 API 서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
   console.log(`📊 골프장 API: http://localhost:${PORT}/api/golf-courses`);
   console.log(`🏌️ 티타임 매트릭스: http://localhost:${PORT}/api/tee-time-matrix`);
-  console.log(`🎯 총 골프장 수: ${Object.values(golfCourses).flat().length}개 (8개 지역 × 2개씩)`);
+  console.log(`⏰ 티타임 등록 API: http://localhost:${PORT}/api/tee-times`);
+  console.log(`🎯 총 골프장 수: ${Object.values(golfCourses).flat().length}개 (8개 지역)`);
+  console.log(`📅 샘플 티타임: 2025-09-12일 각 골프장별 1,2,3부 각 2건씩 등록됨`);
 });

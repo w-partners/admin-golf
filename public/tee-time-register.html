@@ -476,27 +476,7 @@
     </style>
 </head>
 <body>
-    <!-- ============ 글로벌 헤더 섹션 ============ -->
-    <div class="global-header">
-        <div class="header-left">
-            <div class="logo">🏌️</div>
-            <div class="company-name">골프장 예약 관리 시스템</div>
-        </div>
-        <div class="header-right">
-            <div class="notification-icon">🔔</div>
-            <div class="user-profile">관리자 (01034424668)</div>
-            <button class="login-btn">로그아웃</button>
-        </div>
-    </div>
-
-    <!-- ============ 퀵 메뉴 섹션 ============ -->
-    <div class="quick-menu">
-        <button class="menu-item" onclick="location.href='index.html'">티타임:모두</button>
-        <button class="menu-item active">티타임등록:매니저이상</button>
-        <button class="menu-item" onclick="location.href='golf-courses.html'">골프장리스트/등록:관리자이상</button>
-        <button class="menu-item">실적등록:매니저이상</button>
-        <button class="menu-item">회원관리:관리자이상</button>
-    </div>
+    <!-- 공통 헤더와 퀵메뉴는 JavaScript로 자동 생성됩니다 -->
 
     <!-- ============ 메인 컨테이너 ============ -->
     <div class="container">
@@ -571,6 +551,8 @@
         </div>
     </div>
 
+        <!-- 공통 퀵메뉴 컴포넌트 -->
+    <script src="components/quick-menu.js"></script>
     <script>
         let golfCourses = {};
         let currentDropdownIndex = -1; // 드롭다운 선택된 인덱스

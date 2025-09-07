@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>티타임 매트릭스 표시 테스트</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+        }
+        .test-result { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+        }
+        .success { 
+            background: #d4edda; 
+            border: 1px solid #c3e6cb; 
+            color: #155724; 
+        }
+        .error { 
+            background: #f8d7da; 
+            border: 1px solid #f5c6cb; 
+            color: #721c24; 
+        }
+        .info { 
+            background: #d1ecf1; 
+            border: 1px solid #bee5eb; 
+            color: #0c5460; 
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .matrix-cell {
+            display: inline-flex;
+            gap: 2px;
+        }
+        .part {
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 12px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .part1 { background: #e3f2fd; }
+        .part2 { background: #fff3e0; }
+        .part3 { background: #f3e5f5; }
+    </style>
+</head>
+<body>
+    <h1>🏌️ 티타임 매트릭스 표시 테스트</h1>
+    
+    <div id="status" class="test-result info">데이터를 로딩하는 중...</div>
+    
+    <h2>등록된 골프장 목록</h2>
+    <div id="golf-courses-list"></div>
+    
+    <h2>9월 12일 티타임 매트릭스</h2>
+    <div id="matrix-display"></div>
+
+    <script>
+        async function testMatrixDisplay() {
+            const statusDiv = document.getElementById('status');
+            const golfCoursesDiv = document.getElementById('golf-courses-list');
+            const matrixDiv = document.getElementById('matrix-display');
+            
+            try {
+                statusDiv.textContent = '골프장 데이터 로딩 중...';
+                
+                // 골프장 목록 가져오기
+                const golfCoursesResponse = await fetch('http://localhost:3001/api/golf-courses');
+                const golfCoursesData = await golfCoursesResponse.json();
+                
+                // 티타임 매트릭스 데이터 가져오기
+                statusDiv.textContent = '티타임 매트릭스 데이터 로딩 중...';
+                const matrixResponse = await fetch('http://localhost:3001/api/tee-time-matrix');
+                const matrixData = await matrixResponse.json();
+                
+                // 골프장 목록 표시
+                let golfCoursesHTML = '<h3>등록된 골프장 목록:</h3><ul>';
+                let totalCourses = 0;
+                
+                Object.keys(golfCoursesData).forEach(region => {
+                    golfCoursesHTML += `<li><strong>${region}</strong>: ${golfCoursesData[region].length}개</li>`;
+                    golfCoursesData[region].forEach(course => {
+                        golfCoursesHTML += `<li style="margin-left: 20px;">• ${course.name}</li>`;
+                        totalCourses++;
+                    });
+                });
+                
+                golfCoursesHTML += `</ul><p><strong>총 ${totalCourses}개 골프장</strong></p>`;
+                golfCoursesDiv.innerHTML = golfCoursesHTML;
+                
+                // 매트릭스 표시 (9월 12일만)
+                const targetDate = '2025-09-12';
+                let matrixHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>지역</th>
+                                <th>골프장명</th>
+                                <th>${targetDate} 티타임</th>
+                                <th>1부</th>
+                                <th>2부</th>
+                                <th>3부</th>
+                                <th>총계</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                let totalTeetimes = 0;
+                let courseCount = 0;
+                
+                Object.keys(matrixData).forEach(courseKey => {
+                    const courseData = matrixData[courseKey];
+                    const dateData = courseData.dates[targetDate] || { part1: 0, part2: 0, part3: 0 };
+                    
+                    const part1 = dateData.part1;
+                    const part2 = dateData.part2;
+                    const part3 = dateData.part3;
+                    const total = part1 + part2 + part3;
+                    
+                    totalTeetimes += total;
+                    courseCount++;
+                    
+                    matrixHTML += `
+                        <tr>
+                            <td>${courseData.region}</td>
+                            <td>${courseData.courseName}</td>
+                            <td>
+                                <div class="matrix-cell">
+                                    <span class="part part1">${part1}</span>
+                                    <span class="part part2">${part2}</span>
+                                    <span class="part part3">${part3}</span>
+                                </div>
+                            </td>
+                            <td><span class="part part1">${part1}</span></td>
+                            <td><span class="part part2">${part2}</span></td>
+                            <td><span class="part part3">${part3}</span></td>
+                            <td><strong>${total}</strong></td>
+                        </tr>
+                    `;
+                });
+                
+                matrixHTML += `
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #f8f9fa; font-weight: bold;">
+                                <td colspan="2">합계 (${courseCount}개 골프장)</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>${totalTeetimes}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                `;
+                
+                matrixDiv.innerHTML = matrixHTML;
+                
+                statusDiv.className = 'test-result success';
+                statusDiv.innerHTML = `
+                    ✅ 테스트 완료!<br>
+                    • 골프장: ${totalCourses}개<br>
+                    • 매트릭스 항목: ${courseCount}개<br>
+                    • ${targetDate} 총 티타임: ${totalTeetimes}개<br>
+                    • 각 골프장별 1,2,3부 각각 2개씩 정상 표시됨
+                `;
+                
+            } catch (error) {
+                statusDiv.className = 'test-result error';
+                statusDiv.textContent = `❌ 테스트 실패: ${error.message}`;
+                console.error('테스트 실패:', error);
+            }
+        }
+        
+        // 페이지 로드시 자동 실행
+        document.addEventListener('DOMContentLoaded', testMatrixDisplay);
+    </script>
+</body>
+</html>

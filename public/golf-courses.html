@@ -244,6 +244,8 @@
             color: #374151;
             position: sticky;
             top: 0;
+            z-index: 10;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .data-table tbody tr:hover {
@@ -571,28 +573,7 @@
 </head>
 <body>
     <!-- ============ HTML BODY 섹션 시작 ============ -->
-    <!-- ============ 전역 헤더 섹션 ============ -->
-    <!-- Global Header -->
-    <div class="global-header">
-        <div class="header-left">
-            <div class="logo">🏌️</div>
-            <div class="company-name">골프장 예약 관리 시스템</div>
-        </div>
-        <div class="header-right">
-            <div class="user-profile">최고관리자 (01034424668)</div>
-            <button class="btn-header" onclick="location.href='index.html'">메인으로</button>
-        </div>
-    </div>
-
-    <!-- ============ 퀵 메뉴 섹션 ============ -->
-    <!-- Quick Menu -->
-    <div class="quick-menu">
-        <a href="index.html" class="menu-item">티타임:모두</a>
-        <a href="#" class="menu-item">티타임등록:매니저이상</a>
-        <a href="#" class="menu-item active">골프장리스트/등록:관리자이상</a>
-        <a href="#" class="menu-item">실적등록:매니저이상</a>
-        <a href="#" class="menu-item">회원관리:관리자이상</a>
-    </div>
+    <!-- 공통 헤더와 퀵메뉴는 JavaScript로 자동 생성됩니다 -->
 
     <!-- ============ 메인 컨테이너 섹션 ============ -->
     <!-- Main Container -->
@@ -719,6 +700,8 @@
     </div>
 
     <!-- ============ JavaScript 섹션 시작 ============ -->
+    <!-- 공통 퀵메뉴 컴포넌트 -->
+    <script src="components/quick-menu.js"></script>
     <script>
         let currentGolfCourses = [];
         let filteredGolfCourses = [];
@@ -840,14 +823,62 @@
             `).join('');
         }
 
+        // 한글 초성 매핑
+        function getKoreanInitials(str) {
+            const initials = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+            const result = [];
+            
+            for (let i = 0; i < str.length; i++) {
+                const charCode = str.charCodeAt(i);
+                if (charCode >= 44032 && charCode <= 55203) { // 한글 완성형
+                    const initialIndex = Math.floor((charCode - 44032) / 588);
+                    result.push(initials[initialIndex]);
+                } else {
+                    result.push(str[i]);
+                }
+            }
+            
+            return result.join('');
+        }
+        
+        // 한글 초성 검색 매치 확인
+        function matchesKoreanSearch(text, searchTerm) {
+            const lowerText = text.toLowerCase();
+            const lowerSearch = searchTerm.toLowerCase();
+            
+            // 일반 문자열 검색
+            if (lowerText.includes(lowerSearch)) {
+                return true;
+            }
+            
+            // 한글 초성 검색 (완전한 자모 매칭)
+            const textInitials = getKoreanInitials(text);
+            const searchInitials = getKoreanInitials(searchTerm);
+            
+            // 초성으로 시작하는지 확인
+            if (textInitials.toLowerCase().includes(searchTerm.toLowerCase())) {
+                return true;
+            }
+            
+            // 검색어가 초성인지 확인하고 매칭
+            if (searchInitials !== searchTerm) {
+                // 검색어가 완성형 한글인 경우의 초성 매칭
+                if (textInitials.toLowerCase().includes(searchInitials.toLowerCase())) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
         // 필터 적용
         function applyFilters() {
-            const searchName = document.getElementById('searchName').value.trim().toLowerCase();
+            const searchName = document.getElementById('searchName').value.trim();
             const filterRegion = document.getElementById('filterRegion').value;
             const filterStatus = document.getElementById('filterStatus').value;
             
             filteredGolfCourses = currentGolfCourses.filter(course => {
-                const nameMatch = !searchName || course.name.toLowerCase().includes(searchName);
+                const nameMatch = !searchName || matchesKoreanSearch(course.name, searchName);
                 const regionMatch = !filterRegion || course.region === filterRegion;
                 const statusMatch = !filterStatus || course.status === filterStatus;
                 

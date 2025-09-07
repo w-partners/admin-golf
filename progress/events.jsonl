@@ -1,9 +1,0 @@
-{"timestamp":"2025-01-06T15:45:00+09:00","agent":"progress-tracker","event":"session_start","status":"success","details":"골프장 예약 관리 시스템 복구 작업 시작"}
-{"timestamp":"2025-01-06T15:50:00+09:00","agent":"frontend","event":"ui_recovery","status":"success","details":"Tailwind CSS 및 shadcn/ui 컴포넌트 복구 완료","files":["tailwind.config.ts","globals.css","postcss.config.mjs"]}
-{"timestamp":"2025-01-06T15:55:00+09:00","agent":"backend","event":"auth_system_fix","status":"success","details":"NextAuth.js v5 호환성 및 JWT 세션 전략 통합","files":["lib/auth.ts"]}
-{"timestamp":"2025-01-06T16:00:00+09:00","agent":"backend","event":"database_seed","status":"success","details":"8개 테스트 계정 생성 및 초기 데이터 설정","accounts":8}
-{"timestamp":"2025-01-06T16:05:00+09:00","agent":"backend","event":"api_compatibility","status":"success","details":"Next.js 15 params Promise 처리 수정","files":["app/api/users/[id]/route.ts","app/api/teams/[id]/route.ts"]}
-{"timestamp":"2025-01-06T16:10:00+09:00","agent":"performance","event":"server_optimization","status":"success","details":"개발 서버 안정화 및 응답 속도 최적화","matrix_api_response":"22-75ms"}
-{"timestamp":"2025-01-06T16:15:00+09:00","agent":"progress-tracker","event":"recovery_complete","status":"success","details":"골프장 예약 관리 시스템 운영 준비 완료","server_url":"http://localhost:3007"}
-{"timestamp":"2025-01-06T16:16:00+09:00","agent":"progress-tracker","event":"checkpoint_created","status":"success","details":"체크포인트 생성 완료","tag":"CP_20250106_161500_site-operation-recovery","commit":"6fb56fa"}
-{"timestamp":"2025-01-06T16:16:30+09:00","agent":"progress-tracker","event":"git_push","status":"failed","details":"원격 저장소 설정 없음 (로컬 전용 프로젝트)","note":"로컬 체크포인트로 관리"}

@@ -313,28 +313,7 @@
 </head>
 <body>
     <!-- ============ HTML BODY 섹션 시작 ============ -->
-    <!-- ============ 전역 헤더 섹션 ============ -->
-    <!-- Global Header -->
-    <div class="global-header">
-        <div class="header-left">
-            <div class="logo">🏌️</div>
-            <div class="company-name">골프장 예약 관리 시스템</div>
-        </div>
-        <div class="header-right">
-            <div class="user-profile">최고관리자 (01034424668)</div>
-            <button class="btn-header" onclick="location.href='index.html'">메인으로</button>
-        </div>
-    </div>
-
-    <!-- ============ 퀵 메뉴 섹션 ============ -->
-    <!-- Quick Menu -->
-    <div class="quick-menu">
-        <a href="index.html" class="menu-item">티타임:모두</a>
-        <a href="#" class="menu-item">티타임등록:매니저이상</a>
-        <a href="#" class="menu-item active">골프장리스트/등록:관리자이상</a>
-        <a href="#" class="menu-item">실적등록:매니저이상</a>
-        <a href="#" class="menu-item">회원관리:관리자이상</a>
-    </div>
+        <!-- 공통 헤더와 퀵메뉴는 JavaScript로 자동 생성됩니다 -->
 
     <!-- ============ 메인 컨테이너 섹션 ============ -->
     <!-- Main Container -->
@@ -398,7 +377,7 @@
                         <!-- 연락처 -->
                         <div class="form-group">
                             <label class="form-label required">연락처</label>
-                            <input type="tel" class="form-input" id="contact" name="contact" required placeholder="예: 064-123-4567" pattern="[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}">
+                            <input type="text" class="form-input" id="contact" name="contact" required placeholder="연락처를 입력하세요">
                         </div>
 
                         <!-- 운영상태 -->
@@ -441,6 +420,8 @@
     </div>
 
     <!-- ============ JavaScript 섹션 시작 ============ -->
+        <!-- 공통 퀵메뉴 컴포넌트 -->
+    <script src="components/quick-menu.js"></script>
     <script>
         // 폼 제출 처리
         document.getElementById('golf-course-form').addEventListener('submit', async function(e) {
@@ -463,17 +444,11 @@
                 return;
             }
 
-            // 연락처 형식 검사
-            const phoneRegex = /^\d{2,3}-\d{3,4}-\d{4}$/;
-            if (!phoneRegex.test(golfCourseData.contact)) {
-                showAlert('error', '연락처 형식이 올바르지 않습니다. (예: 064-123-4567)');
-                return;
-            }
 
             try {
                 showLoading(true);
                 
-                const response = await fetch('/api/golf-courses', {
+                const response = await fetch('http://localhost:3001/api/golf-courses', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -535,28 +510,12 @@
             document.getElementById('alert-container').innerHTML = '';
         }
 
-        // 연락처 입력시 자동 하이픈 추가
-        document.getElementById('contact').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9]/g, '');
-            
-            if (value.length >= 6) {
-                if (value.length <= 10) {
-                    // 010-1234-5678 형식
-                    value = value.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-                } else {
-                    // 064-123-4567 형식
-                    value = value.replace(/(\d{2,3})(\d{3,4})(\d{4})/, '$1-$2-$3');
-                }
-            }
-            
-            e.target.value = value;
-        });
 
         // 페이지 로드시 순번 자동 설정
         document.addEventListener('DOMContentLoaded', async function() {
             try {
                 // 다음 순번 조회
-                const response = await fetch('/api/golf-courses/next-sequence');
+                const response = await fetch('http://localhost:3001/api/golf-courses/next-sequence');
                 if (response.ok) {
                     const result = await response.json();
                     document.getElementById('sequence').value = result.nextSequence;
