@@ -54,3 +54,4 @@ test-*-validation.ts
 validation-report-*.json
 
 /app/generated/prisma
+pgdata/
