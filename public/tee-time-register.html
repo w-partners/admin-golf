@@ -1030,7 +1030,7 @@
                     button.setAttribute('tabindex', '0');
                 }
                 
-                button.addEventListener('keydown', (e) => {
+                button.addEventListener('keydown', async (e) => {
                     if (e.key === ' ') { // 스페이스바로 변경
                         e.preventDefault();
                         
